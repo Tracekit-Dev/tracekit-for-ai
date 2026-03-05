@@ -1,0 +1,7 @@
+{
+  "name": "TraceKit",
+  "slug": "tracekit",
+  "description": "Set up TraceKit APM in any project — live breakpoints, distributed tracing, session replay, and error monitoring.",
+  "category": "debugging",
+  "tags": ["apm", "observability", "tracing", "monitoring"]
+}

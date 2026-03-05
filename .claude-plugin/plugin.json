@@ -1,0 +1,9 @@
+{
+  "name": "TraceKit",
+  "description": "AI skills for setting up TraceKit APM — live breakpoints, distributed tracing, session replay, and error monitoring for any stack.",
+  "version": "1.0.0",
+  "author": "TraceKit",
+  "keywords": ["tracekit", "apm", "observability", "tracing", "debugging", "monitoring", "error-tracking"],
+  "license": "Apache-2.0",
+  "repository": "https://github.com/tracekit-dev/tracekit-for-ai"
+}
