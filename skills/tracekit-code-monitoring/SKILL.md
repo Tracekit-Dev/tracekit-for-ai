@@ -18,6 +18,8 @@ Use this skill when the user asks to:
 
 **This is TraceKit's core differentiator.** Code monitoring lets developers debug production services with less than 5ms overhead per breakpoint hit -- no redeployment, no restart, no code changes required. Set a breakpoint, capture variable state, and link snapshots directly to distributed traces.
 
+**Production-grade by default:** All SDKs include PII scrubbing (13 typed patterns, default-on), crash isolation, circuit breakers (auto-disable after 3 failures, auto-recover after 5 minutes), remote kill switch, and real-time breakpoint sync via Server-Sent Events (SSE).
+
 ## Non-Negotiable Rules
 
 1. **Never hardcode API keys** in code. Always use `TRACEKIT_API_KEY` env var (or the equivalent for your language/framework).
@@ -115,7 +117,7 @@ The fastest way to start is through the TraceKit dashboard:
 7. Set **rate limit** (default: 10 snapshots per minute)
 8. Click **"Activate"**
 
-The breakpoint takes effect within seconds -- no redeployment needed. The SDK polls for active breakpoints and applies them to the running process.
+The breakpoint takes effect within seconds -- no redeployment needed. SDKs receive breakpoint updates in real-time via SSE (Server-Sent Events), with automatic fallback to polling if SSE is unavailable.
 
 ## Step 3: Breakpoint Types
 
@@ -129,7 +131,7 @@ Captures all local variables when execution hits the specified line.
 
 ### Conditional Breakpoint
 
-Only triggers when a boolean expression evaluates to true. The expression has access to all local variables in scope.
+Only triggers when a boolean expression evaluates to true. Conditions are **evaluated server-side** in a sandboxed expression engine -- raw expressions never run in your application. SDKs send metadata via a check-in endpoint, and the server decides whether to instruct capture.
 
 **Use for:** Debugging issues that only affect specific users, requests, or error conditions.
 
@@ -163,28 +165,49 @@ Configure how much data breakpoints capture and how often they fire.
 | **Expiration** | 24 hours | Auto-remove the breakpoint after this duration. Prevents forgotten breakpoints. |
 | **Max string length** | 256 chars | Truncate string values beyond this length. |
 
-### Sensitive Data Redaction
+### PII Scrubbing (Default On)
 
-Configure field patterns to exclude from snapshots. Any captured variable whose name matches a pattern is replaced with `[REDACTED]`.
+All SDKs automatically scrub sensitive data from snapshots before transmission. Detected values are replaced with typed markers like `[REDACTED:email]` for audit trails.
 
-Default redaction patterns:
-- `password`
-- `token`
-- `secret`
-- `authorization`
-- `cookie`
-- `creditCard` / `credit_card`
+**13 built-in patterns** (enabled by default):
 
-Add custom patterns in the dashboard under Code Monitoring > Settings > Redaction Patterns, or pass them in the SDK config:
+| Pattern | Detects | Marker |
+|---|---|---|
+| Email | `user@example.com` | `[REDACTED:email]` |
+| SSN | `123-45-6789` | `[REDACTED:ssn]` |
+| Credit Card | `4111111111111111` | `[REDACTED:credit_card]` |
+| Phone | `+1-555-123-4567` | `[REDACTED:phone]` |
+| AWS Access Key | `AKIA...` | `[REDACTED:aws_key]` |
+| AWS Secret Key | `wJalrXUtnFE...` | `[REDACTED:aws_secret]` |
+| OAuth Token | `ya29.a0...` | `[REDACTED:oauth_token]` |
+| Stripe Key | `sk_live_...` | `[REDACTED:stripe_key]` |
+| Sensitive Variable Name | `password`, `secret`, `api_key`, etc. | `[REDACTED:sensitive_name]` |
+| JWT | `eyJhbGciOi...` | `[REDACTED:jwt]` |
+| Private Key | `-----BEGIN...` | `[REDACTED:private_key]` |
+| API Key (generic) | Various key patterns | `[REDACTED:api_key]` |
+| Password value | In password-named fields | `[REDACTED:password]` |
+
+Add custom patterns in the SDK config:
 
 ```javascript
 // Node.js example
 tracekit.init({
-  // ... other config
-  codeMonitoring: {
-    redactFields: ['ssn', 'bankAccount', 'apiSecret'],
+  apiKey: process.env.TRACEKIT_API_KEY,
+  serviceName: 'my-service',
+  enableCodeMonitoring: true,
+  captureConfig: {
+    piiScrubbing: true,  // default: true
+    piiPatterns: [
+      { pattern: /CUSTOM-\d+/, marker: '[REDACTED:custom_id]' },
+    ],
   },
 });
+```
+
+To disable PII scrubbing (not recommended for production):
+
+```javascript
+captureConfig: { piiScrubbing: false }
 ```
 
 ## Step 5: Programmatic Breakpoints (SDK API)
@@ -259,7 +282,7 @@ Verify code monitoring is working end to end:
    ```bash
    curl http://localhost:8080/api/health
    ```
-3. **Within 30 seconds**, check `https://app.tracekit.dev/code-monitoring` for a new snapshot
+3. **Within a few seconds** (SSE) or **up to 30 seconds** (polling), check `https://app.tracekit.dev/code-monitoring` for a new snapshot
 4. **Verify** the captured variables match expected state (request headers, local variables, etc.)
 5. **Click the Trace ID** to confirm the snapshot is linked to a distributed trace
 6. **Remove or deactivate** the test breakpoint once verified
@@ -272,9 +295,12 @@ If snapshots do not appear, see Troubleshooting below.
 
 - **Check `enableCodeMonitoring: true`** is set in your SDK init config. Without this, the SDK does not poll for breakpoints.
 - **Check the breakpoint is active** in the dashboard. Expired or paused breakpoints do not fire.
+- **Check the kill switch** is not active for the service (Code Monitoring dashboard > service > Kill Switch toggle).
+- **Check the circuit breaker** hasn't tripped -- look for "circuit breaker open" in SDK logs. It auto-recovers after 5 minutes.
 - **Check the service is sending data** -- visit `https://app.tracekit.dev/traces` to confirm traces are flowing from this service.
 - **Check the service name matches** -- the breakpoint targets a specific service. Ensure `serviceName` in your SDK init matches the service selected when creating the breakpoint.
 - **Check network connectivity** -- the SDK must reach `https://app.tracekit.dev` to fetch breakpoint configurations and upload snapshots.
+- **Check condition expressions** -- if a breakpoint has a condition, verify it's syntactically valid and the metadata matches.
 
 ### Too many snapshots
 
@@ -284,8 +310,9 @@ If snapshots do not appear, see Troubleshooting below.
 
 ### Missing variables in snapshots
 
-- **Increase capture depth** if nested object values show as `[truncated]`. Default is 3 levels; increase to 5 or higher.
-- **Check redaction patterns** -- variables matching redaction patterns are replaced with `[REDACTED]`.
+- **Increase capture depth** if nested object values show as `[truncated]`. Use `captureConfig.captureDepth` to increase (default: unlimited, but breakpoint settings may limit).
+- **Check PII scrubbing** -- variables matching the 13 built-in PII patterns are replaced with typed markers like `[REDACTED:email]`. This is expected behavior for sensitive data.
+- **Check payload limits** -- if using `captureConfig.maxPayload`, large snapshots are truncated with a `_truncated` marker.
 - **Check compiler optimizations** -- in Go, variables optimized away by the compiler may not be capturable. Build with `-gcflags='-N -l'` for debugging.
 
 ### High latency after enabling breakpoints
@@ -294,6 +321,35 @@ If snapshots do not appear, see Troubleshooting below.
 - **Add conditions** to reduce how often breakpoints fire.
 - **Avoid hot loops** -- do not set unconditional breakpoints inside tight loops or high-frequency functions.
 - **Use logpoints** instead of full snapshots for lightweight tracing.
+
+## Production Safety Features
+
+All safety features are enabled by default with zero configuration:
+
+| Feature | Default | Override |
+|---|---|---|
+| PII Scrubbing (13 patterns) | Enabled | `captureConfig.piiScrubbing: false` to disable |
+| Crash Isolation | Always on | Cannot be disabled |
+| Circuit Breaker (3 failures/60s, 5min cooldown) | Enabled | `captureConfig.circuitBreaker: { maxFailures, windowMs, cooldownMs }` |
+| Remote Kill Switch | Available | Toggle in dashboard per service |
+| Real-Time SSE | Auto-discovered | No config needed, falls back to polling |
+| Capture Limits | Disabled (unlimited) | `captureConfig: { captureDepth, maxPayload, captureTimeout }` |
+
+### Kill Switch
+
+To immediately stop all code monitoring for a service:
+1. Go to **Code Monitoring** in the dashboard
+2. Select the service
+3. Toggle the **Kill Switch**
+
+All connected SDKs stop capturing within 1 second (SSE) or 60 seconds (polling).
+
+### Circuit Breaker
+
+If the TraceKit backend becomes unreachable:
+1. After 3 HTTP 5xx/network failures within 60 seconds, code monitoring auto-disables
+2. After 5 minutes, it automatically re-enables and retries
+3. Only HTTP 5xx and network errors count -- 4xx errors are ignored
 
 ## Next Steps
 
