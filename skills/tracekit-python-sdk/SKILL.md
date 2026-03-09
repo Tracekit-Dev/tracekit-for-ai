@@ -4,9 +4,6 @@ description: Sets up TraceKit APM in Python applications for automatic distribut
 ---
 
 # TraceKit Python SDK Setup
-
-> **Coming soon -- SDK in development.** The TraceKit Python SDK (`tracekit-apm`) is not yet published. The setup patterns below reflect the planned API. This skill will be updated when the SDK ships.
-
 ## When To Use
 
 Use this skill when the user asks to:

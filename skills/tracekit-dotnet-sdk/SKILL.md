@@ -4,9 +4,6 @@ description: Sets up TraceKit APM in .NET applications for automatic distributed
 ---
 
 # TraceKit .NET SDK Setup
-
-> **Coming soon -- SDK in development.** The patterns below reflect the planned API. Package names and method signatures may change before GA release.
-
 ## When To Use
 
 Use this skill when the user asks to:

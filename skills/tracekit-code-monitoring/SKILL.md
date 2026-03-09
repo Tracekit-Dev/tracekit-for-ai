@@ -51,7 +51,7 @@ Detect which backend SDK is installed by scanning project files:
 | File to Check | Content to Match | SDK Detected |
 |---|---|---|
 | `go.mod` | `tracekit` or `Tracekit-Dev` | Go SDK |
-| `package.json` | `@tracekit/node` | Node.js SDK |
+| `package.json` | `@tracekit/node-apm` | Node.js SDK |
 | `requirements.txt` or `pyproject.toml` | `tracekit-apm` | Python SDK |
 | `composer.json` | `tracekit/php-apm` | PHP SDK |
 | `composer.json` | `tracekit/laravel-apm` | Laravel SDK |
@@ -79,7 +79,7 @@ sdk, err := tracekit.NewSDK(&tracekit.Config{
 ### Node.js
 
 ```javascript
-const tracekit = require('@tracekit/node');
+const tracekit = require('@tracekit/node-apm');
 
 tracekit.init({
   apiKey: process.env.TRACEKIT_API_KEY,
@@ -314,7 +314,7 @@ func handlePayment(ctx context.Context, order Order) error {
 Create a `breakpoints` module (e.g., `src/lib/breakpoints.ts`):
 
 ```typescript
-import * as tracekit from '@tracekit/node-apm';
+import * as tracekit from '@tracekit/node-apm-apm';
 
 // Hold the snapshot client directly to preserve correct stack frame attribution.
 // The SDK uses stack inspection internally — calling through the SDK wrapper
@@ -334,7 +334,7 @@ export function capture(name: string, data: Record<string, unknown>): void {
 Initialize after SDK setup:
 
 ```typescript
-import * as tracekit from '@tracekit/node-apm';
+import * as tracekit from '@tracekit/node-apm-apm';
 import * as breakpoints from './lib/breakpoints';
 
 const sdk = tracekit.init({

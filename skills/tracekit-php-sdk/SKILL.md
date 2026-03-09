@@ -4,9 +4,6 @@ description: Sets up TraceKit APM in vanilla PHP applications for automatic dist
 ---
 
 # TraceKit PHP SDK Setup
-
-> **Coming soon -- SDK in development.** The patterns below reflect the planned API. Package names and method signatures may change before GA release.
-
 ## When To Use
 
 Use this skill when the user asks to:

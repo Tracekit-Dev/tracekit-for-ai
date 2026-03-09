@@ -5,8 +5,6 @@ description: Sets up TraceKit APM in React applications with error boundaries, c
 
 # TraceKit React SDK Setup
 
-> **Coming soon -- SDK in development.** The patterns below reflect the planned API. Package names and method signatures may change before GA release.
-
 ## When To Use
 
 Use this skill when the user asks to:
@@ -327,7 +325,7 @@ TRACEKIT_AUTH_TOKEN=your_auth_token_here
 After building:
 
 ```bash
-npx tracekit-cli sourcemaps upload --release=1.0.0 ./build
+tracekit sourcemaps upload --release=1.0.0 ./build
 ```
 
 **Build integration** — add to `package.json`:
@@ -336,7 +334,7 @@ npx tracekit-cli sourcemaps upload --release=1.0.0 ./build
 {
   "scripts": {
     "build": "vite build",
-    "postbuild": "npx tracekit-cli sourcemaps upload --release=$npm_package_version ./dist"
+    "postbuild": "tracekit sourcemaps upload --release=$npm_package_version ./dist"
   }
 }
 ```

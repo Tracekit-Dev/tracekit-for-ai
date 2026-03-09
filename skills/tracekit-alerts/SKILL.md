@@ -14,7 +14,7 @@ Use this skill when the user asks to:
 - Detect error spikes automatically
 - Set up uptime monitoring
 - Configure Slack notifications for errors
-- Create alerting rules via API or CLI
+- Create alerting rules via API or the dashboard
 - Manage alert fatigue or notification routing
 
 ## Non-Negotiable Rules
@@ -177,36 +177,15 @@ Beyond the starter kit, create custom alerts for your specific needs:
 
 You can also set a **resolve notification** — TraceKit will send a follow-up message when the metric returns to normal. This reduces the need to manually check if an issue has recovered.
 
-## Step 4: Programmatic Alerts (API and CLI)
+## Step 4: Programmatic Alerts (Dashboard and API)
 
 For teams that manage infrastructure as code, create and manage alerts programmatically.
 
-### CLI
+### Dashboard
 
-```bash
-npx tracekit-cli alerts create \
-  --name="Error Spike" \
-  --metric=error_count \
-  --threshold=5x \
-  --window=5m \
-  --channel=slack:engineering-alerts \
-  --auth-token=$TRACEKIT_AUTH_TOKEN
-```
+The recommended way to manage alerts is through the TraceKit dashboard at `https://app.tracekit.dev/alerts`. The dashboard provides a full UI for creating, editing, listing, and deleting alert rules.
 
-List existing alerts:
-
-```bash
-npx tracekit-cli alerts list \
-  --auth-token=$TRACEKIT_AUTH_TOKEN
-```
-
-Delete an alert:
-
-```bash
-npx tracekit-cli alerts delete \
-  --id=alert_abc123 \
-  --auth-token=$TRACEKIT_AUTH_TOKEN
-```
+> **Note:** The TraceKit CLI (`tracekit`) supports `webhook create/list/delete` commands for managing webhook channels, but does **not** have `alerts` subcommands. Use the dashboard or the REST API below to manage alert rules programmatically.
 
 ### API
 

@@ -25,7 +25,7 @@ Use this skill when the user asks to:
 ## Prerequisites
 
 - Any TraceKit SDK (backend or frontend) must be installed and sending data to the dashboard.
-- `@tracekit/cli` must be installed (see Step 1 below).
+- The TraceKit CLI must be installed (see Step 1 below).
 - If no SDK is set up yet, complete the appropriate SDK skill first (e.g., `tracekit-node-sdk`, `tracekit-go-sdk`, `tracekit-react-sdk`).
 
 ## Detection
@@ -39,10 +39,20 @@ Before applying this skill, detect the project type:
 ## Step 1: Install TraceKit CLI
 
 ```bash
-npm install -D @tracekit/cli
+# macOS / Linux (Homebrew)
+brew install Tracekit-Dev/tap/tracekit
+
+# Or use the install script
+curl -fsSL https://raw.githubusercontent.com/Tracekit-Dev/cli/main/install.sh | sh
 ```
 
-This installs the TraceKit CLI as a dev dependency. It provides commands for creating releases, uploading source maps, and marking deploys.
+Verify the installation:
+
+```bash
+tracekit --version
+```
+
+The CLI provides commands for creating releases, uploading source maps, and marking deploys. See https://github.com/Tracekit-Dev/cli for all install options.
 
 ## Step 2: Configure Auth Token
 
@@ -68,7 +78,7 @@ Configure your SDK to tag all events with the release version. The `release` val
 ### Node.js
 
 ```javascript
-const TraceKit = require('@tracekit/node');
+const TraceKit = require('@tracekit/node-apm');
 
 TraceKit.init({
   apiKey: process.env.TRACEKIT_API_KEY,
@@ -107,7 +117,7 @@ All TraceKit SDKs support a `release` config key. The value can be any string â€
 Use the CLI to create a release in TraceKit. This registers the version so errors and transactions can be grouped by release.
 
 ```bash
-npx tracekit-cli releases new $VERSION \
+tracekit releases new $VERSION \
   --auth-token=$TRACEKIT_AUTH_TOKEN
 ```
 
@@ -118,7 +128,7 @@ Replace `$VERSION` with your release identifier (e.g., `1.2.3`, `abc123`).
 Link commits to a release so you can see which code changes are included. This enables the "Suspect Commits" feature that highlights likely culprits for new errors.
 
 ```bash
-npx tracekit-cli releases set-commits $VERSION \
+tracekit releases set-commits $VERSION \
   --auto \
   --auth-token=$TRACEKIT_AUTH_TOKEN
 ```
@@ -130,7 +140,7 @@ The `--auto` flag detects commits from your Git repository automatically. You mu
 Signal that a release has been deployed to an environment. This marks the deploy on the timeline and starts tracking crash-free rate from this point.
 
 ```bash
-npx tracekit-cli releases deploys $VERSION new \
+tracekit releases deploys $VERSION new \
   --env=production \
   --auth-token=$TRACEKIT_AUTH_TOKEN
 ```
@@ -163,12 +173,12 @@ jobs:
 
       - name: Create release and mark deploy
         run: |
-          npx tracekit-cli releases new ${{ github.sha }} \
+          tracekit releases new ${{ github.sha }} \
             --auth-token=$TRACEKIT_AUTH_TOKEN
-          npx tracekit-cli releases set-commits ${{ github.sha }} \
+          tracekit releases set-commits ${{ github.sha }} \
             --auto \
             --auth-token=$TRACEKIT_AUTH_TOKEN
-          npx tracekit-cli releases deploys ${{ github.sha }} new \
+          tracekit releases deploys ${{ github.sha }} new \
             --env=production \
             --auth-token=$TRACEKIT_AUTH_TOKEN
         env:
@@ -201,7 +211,7 @@ After setting up release tracking, verify it works end-to-end:
 
 ### Events not linked to release
 
-- **Check `release` in SDK init** matches the version passed to `tracekit-cli releases new` exactly. Case and whitespace matter.
+- **Check `release` in SDK init** matches the version passed to `tracekit releases new` exactly. Case and whitespace matter.
 - **Check SDK is initialized** before the events are captured â€” if `release` is set after init, earlier events will not be tagged.
 
 ### Crash-free rate not calculating

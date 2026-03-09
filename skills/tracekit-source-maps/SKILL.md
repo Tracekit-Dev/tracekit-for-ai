@@ -29,7 +29,7 @@ Use this skill when the user asks to:
 Source maps require:
 - A **frontend SDK** installed and initialized (`@tracekit/browser`, `@tracekit/react`, etc.)
 - A **build step** that produces minified JavaScript (webpack, vite, rollup, esbuild, etc.)
-- **`@tracekit/cli`** for uploading maps (installed in Step 1)
+- **TraceKit CLI** for uploading maps (installed in Step 1)
 
 **If no frontend SDK is detected**, redirect to `tracekit-browser-sdk` skill (or the appropriate framework skill) first.
 
@@ -47,11 +47,23 @@ Before applying this skill, detect the project setup:
 
 ## Step 1: Install TraceKit CLI
 
+Install the TraceKit CLI using Homebrew or the install script:
+
 ```bash
-npm install -D @tracekit/cli
+# macOS / Linux (Homebrew)
+brew install Tracekit-Dev/tap/tracekit
+
+# Or use the install script
+curl -fsSL https://raw.githubusercontent.com/Tracekit-Dev/cli/main/install.sh | sh
 ```
 
-The CLI is used for uploading source maps to TraceKit. Install it as a dev dependency so it is available in your build pipeline.
+Verify the installation:
+
+```bash
+tracekit --version
+```
+
+The CLI is used for uploading source maps to TraceKit. See https://github.com/Tracekit-Dev/cli for manual downloads (Windows, ARM64, etc.).
 
 ## Step 2: Configure Auth Token
 
@@ -141,7 +153,7 @@ If you use a build tool without a dedicated plugin, upload source maps manually 
 2. **Upload after build:**
 
 ```bash
-npx tracekit-cli sourcemaps upload \
+tracekit sourcemaps upload \
   --auth-token=$TRACEKIT_AUTH_TOKEN \
   --release=$(node -p "require('./package.json').version") \
   ./dist
@@ -203,7 +215,7 @@ jobs:
 
       - name: Upload source maps to TraceKit
         run: |
-          npx tracekit-cli sourcemaps upload \
+          tracekit sourcemaps upload \
             --auth-token=$TRACEKIT_AUTH_TOKEN \
             --release=${{ github.sha }} \
             ./dist
@@ -256,7 +268,7 @@ Verify source maps are working end to end:
 
 - **Check release version matches** -- the `release` in `init()` must exactly match the `--release` used during upload. Print both to verify.
 - **Check source maps were generated** -- verify `.map` files exist in your build output directory before upload. For Vite: `build: { sourcemap: true }`. For Webpack: `devtool: 'source-map'`.
-- **Check upload succeeded** -- run `npx tracekit-cli sourcemaps list --release=YOUR_RELEASE` to verify maps are uploaded.
+- **Check upload succeeded** -- run `tracekit sourcemaps list --release=YOUR_RELEASE` to verify maps are uploaded.
 
 ### "Source map not found" warning in dashboard
 

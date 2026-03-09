@@ -5,8 +5,6 @@ description: Sets up TraceKit APM in Angular applications with dependency inject
 
 # TraceKit Angular SDK Setup
 
-> **Coming soon -- SDK in development.** The `@tracekit/angular` package is not yet published. This skill documents the planned API so AI assistants can guide users through setup once the SDK is released.
-
 ## When To Use
 
 Use this skill when the user asks to:
@@ -354,7 +352,7 @@ Add to your `angular.json` build configuration:
 After building, upload source maps:
 
 ```bash
-npx @tracekit/cli sourcemaps upload \
+tracekit sourcemaps upload \
   --api-key $TRACEKIT_API_KEY \
   --release 1.0.0 \
   --dist ./dist/my-app/browser

@@ -293,7 +293,7 @@ TRACEKIT_AUTH_TOKEN=your_auth_token_here
 After building your application, upload source maps:
 
 ```bash
-npx tracekit-cli sourcemaps upload --release=1.0.0 ./dist
+tracekit sourcemaps upload --release=1.0.0 ./dist
 ```
 
 **Build integration** — add to your build script in `package.json`:
@@ -302,7 +302,7 @@ npx tracekit-cli sourcemaps upload --release=1.0.0 ./dist
 {
   "scripts": {
     "build": "vite build",
-    "postbuild": "npx tracekit-cli sourcemaps upload --release=$npm_package_version ./dist"
+    "postbuild": "tracekit sourcemaps upload --release=$npm_package_version ./dist"
   }
 }
 ```
@@ -423,7 +423,7 @@ async function loadDashboard() {
 ### Source maps not resolving
 
 - **Check release version:** The `release` value in `init()` must exactly match the `--release` flag used during upload.
-- **Check upload succeeded:** Run `npx tracekit-cli sourcemaps list --release=1.0.0` to verify maps are uploaded.
+- **Check upload succeeded:** Run `tracekit sourcemaps list --release=1.0.0` to verify maps are uploaded.
 - **Check build output:** Source maps must exist in the upload directory (`.js.map` files alongside `.js` files).
 
 ### Distributed tracing not connecting

@@ -51,4 +51,5 @@ All skills follow the **detect -> configure -> verify** pattern: detect the user
 | TraceKit Source Maps | `skills/tracekit-source-maps/` | Upload source maps for readable stack traces in production | Available |
 | TraceKit Releases | `skills/tracekit-releases/` | Configure release tracking and deploy notifications | Available |
 | TraceKit Alerts | `skills/tracekit-alerts/` | Set up alerting rules for errors, performance, and availability | Available |
+| TraceKit Custom Metrics | `skills/tracekit-custom-metrics/` | Track business KPIs, counters, gauges, and histograms alongside traces | Available |
 | TraceKit Distributed Tracing | `skills/tracekit-distributed-tracing/` | Connect frontend and backend traces across services | Available |

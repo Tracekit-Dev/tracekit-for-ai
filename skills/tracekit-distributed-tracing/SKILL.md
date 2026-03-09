@@ -40,7 +40,7 @@ Before applying this skill, detect the project setup:
 
 1. **Scan for multiple TraceKit SDKs** across the project or monorepo.
 2. **Frontend detection:** Check `package.json` for `@tracekit/browser`, `@tracekit/react`, `@tracekit/vue`, `@tracekit/angular`, `@tracekit/nextjs`, or `@tracekit/nuxt`.
-3. **Backend detection:** Check `go.mod` for `github.com/Tracekit-Dev/go-sdk`, `requirements.txt` for `tracekit-apm`, `package.json` for `@tracekit/node`, `composer.json` for `tracekit/php-apm`, `pom.xml` for `tracekit-java`, `.csproj` for `TraceKit.AspNetCore`, or `Gemfile` for `tracekit`.
+3. **Backend detection:** Check `go.mod` for `github.com/Tracekit-Dev/go-sdk`, `requirements.txt` for `tracekit-apm`, `package.json` for `@tracekit/node-apm`, `composer.json` for `tracekit/php-apm`, `pom.xml` for `tracekit-core`, `.csproj` for `TraceKit.AspNetCore`, or `Gemfile` for `tracekit`.
 4. **If only frontend found**, suggest completing a backend SDK skill first.
 5. **If only backend found**, suggest completing a browser SDK or framework wrapper skill first.
 6. **If both found**, proceed with distributed tracing setup.
@@ -123,7 +123,7 @@ app.get('/api/users', (req, res) => { /* ... */ });
 **Node.js (Fastify):**
 ```javascript
 // Register TraceKit plugin before routes
-fastify.register(require('@tracekit/node').fastifyPlugin);
+fastify.register(require('@tracekit/node-apm').fastifyPlugin);
 ```
 
 **Go (Gin):**
@@ -167,7 +167,7 @@ When one backend service calls another backend service, trace context must also 
 ### Node.js (Backend-to-Backend)
 
 ```javascript
-const { tracekit } = require('@tracekit/node');
+const { tracekit } = require('@tracekit/node-apm');
 
 // Use tracekit.fetch — auto-injects traceparent into outbound requests
 const response = await tracekit.fetch('http://go-service:8080/api/data');

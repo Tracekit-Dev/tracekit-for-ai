@@ -4,9 +4,6 @@ description: Sets up TraceKit APM in Java applications for automatic distributed
 ---
 
 # TraceKit Java SDK Setup
-
-> **Coming soon -- SDK in development.** The patterns below reflect the planned API. Package names and method signatures may change before GA release.
-
 ## When To Use
 
 Use this skill when the user asks to:
@@ -78,7 +75,7 @@ Add to `pom.xml`:
 ```xml
 <dependency>
     <groupId>dev.tracekit</groupId>
-    <artifactId>tracekit-java</artifactId>
+    <artifactId>tracekit-core</artifactId>
     <version>1.0.0</version>
 </dependency>
 ```
@@ -102,13 +99,13 @@ implementation("dev.tracekit:tracekit-spring-boot-starter:1.0.0")
 Add to `build.gradle`:
 
 ```groovy
-implementation 'dev.tracekit:tracekit-java:1.0.0'
+implementation 'dev.tracekit:tracekit-core:1.0.0'
 ```
 
 Or `build.gradle.kts`:
 
 ```kotlin
-implementation("dev.tracekit:tracekit-java:1.0.0")
+implementation("dev.tracekit:tracekit-core:1.0.0")
 ```
 
 **Prerequisites:**
@@ -438,7 +435,7 @@ Fix: Ensure `tracekit-spring-boot-starter` is on the classpath. Check `@SpringBo
 
 Symptoms: `No bean of type [dev.tracekit.Tracekit] exists` error.
 
-Fix: Ensure the `TracekitFactory` is in a package scanned by Micronaut. Check that `tracekit-java` is on the classpath.
+Fix: Ensure the `TracekitFactory` is in a package scanned by Micronaut. Check that `tracekit-core` is on the classpath.
 
 ### Missing environment variable
 

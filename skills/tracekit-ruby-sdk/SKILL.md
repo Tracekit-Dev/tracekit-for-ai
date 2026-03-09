@@ -4,9 +4,6 @@ description: Sets up TraceKit APM in Ruby applications for automatic distributed
 ---
 
 # TraceKit Ruby SDK Setup
-
-> **Coming soon -- SDK in development.** The TraceKit Ruby SDK (`tracekit` gem) is not yet published. The setup patterns below reflect the planned API. This skill will be updated when the SDK ships.
-
 ## When To Use
 
 Use this skill when the user asks to:

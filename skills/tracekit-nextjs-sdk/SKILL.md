@@ -5,8 +5,6 @@ description: Sets up TraceKit APM in Next.js applications with multi-runtime sup
 
 # TraceKit Next.js SDK Setup
 
-> **Coming soon -- SDK in development.** The `@tracekit/nextjs` package is not yet published. This skill documents the planned API so AI assistants can guide users through setup once the SDK is released.
-
 ## When To Use
 
 Use this skill when the user asks to:
@@ -335,7 +333,7 @@ module.exports = withTraceKit(nextConfig, {
 Or upload manually after building:
 
 ```bash
-npx @tracekit/cli sourcemaps upload \
+tracekit sourcemaps upload \
   --api-key $TRACEKIT_API_KEY \
   --release 1.0.0 \
   --dist .next/static
