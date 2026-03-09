@@ -208,18 +208,46 @@ except Exception as e:
     # handle the error...
 ```
 
-For adding context to traces, use snapshots:
+## Step 5b: Snapshot Capture (Code Monitoring)
+
+For programmatic snapshots, **use the snapshot client directly** — do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
+
+Create a thin wrapper module (e.g., `app/breakpoints.py`):
 
 ```python
-client = tracekit.get_client()
+_snapshot_client = None
 
-# Capture a snapshot with context
-client.capture_snapshot("process-order", {
-    "order_id": order_id,
-    "user_id": user_id,
-    "total": order_total,
-})
+
+def init(sdk):
+    """Store the snapshot client. No-op when sdk is None."""
+    global _snapshot_client
+    if sdk is not None:
+        _snapshot_client = sdk.snapshot_client()
+
+
+def capture(name: str, data: dict):
+    """Fire a code monitoring snapshot. No-op when tracing is disabled."""
+    if _snapshot_client is None:
+        return
+    _snapshot_client.check_and_capture(name, data)
 ```
+
+Initialize after SDK setup:
+
+```python
+from app.breakpoints import init as init_breakpoints
+init_breakpoints(sdk)
+```
+
+Use at call sites:
+
+```python
+from app.breakpoints import capture
+
+capture("payment-failed", {"order_id": order.id, "error": str(e)})
+```
+
+See the `tracekit-code-monitoring` skill for the full pattern across all languages.
 
 ## Step 6: Verification
 

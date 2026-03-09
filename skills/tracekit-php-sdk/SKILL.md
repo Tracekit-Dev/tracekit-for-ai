@@ -213,6 +213,52 @@ try {
 }
 ```
 
+## Step 6b: Snapshot Capture (Code Monitoring)
+
+For programmatic snapshots, **use the SnapshotClient directly** — do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
+
+Create a `Breakpoints` helper (e.g., `src/Breakpoints.php`):
+
+```php
+<?php
+
+namespace App;
+
+class Breakpoints
+{
+    private static $snapshotClient = null;
+
+    public static function init($sdk): void
+    {
+        if ($sdk !== null) {
+            self::$snapshotClient = $sdk->snapshotClient();
+        }
+    }
+
+    public static function capture(string $name, array $data): void
+    {
+        if (self::$snapshotClient === null) {
+            return;
+        }
+        self::$snapshotClient->checkAndCapture($name, $data);
+    }
+}
+```
+
+Initialize after SDK setup:
+
+```php
+\App\Breakpoints::init($sdk);
+```
+
+Use at call sites:
+
+```php
+\App\Breakpoints::capture('payment-failed', ['order_id' => $orderId, 'error' => $e->getMessage()]);
+```
+
+See the `tracekit-code-monitoring` skill for the full pattern across all languages.
+
 ## Step 7: External HTTP Call Tracing
 
 Trace outgoing HTTP requests with the TraceKit HTTP client wrapper:

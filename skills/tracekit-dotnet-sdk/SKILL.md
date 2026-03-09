@@ -168,6 +168,45 @@ catch (Exception ex)
 }
 ```
 
+## Step 5b: Snapshot Capture (Code Monitoring)
+
+For programmatic snapshots, **use the SnapshotClient directly** — do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
+
+Create a `Breakpoints` static helper:
+
+```csharp
+using TraceKit;
+
+public static class Breakpoints
+{
+    private static ISnapshotClient? _snapshotClient;
+
+    public static void Init(TracekitSdk sdk)
+    {
+        _snapshotClient = sdk.SnapshotClient();
+    }
+
+    public static void Capture(string name, Dictionary<string, object> data)
+    {
+        _snapshotClient?.CheckAndCapture(name, data);
+    }
+}
+```
+
+Initialize after SDK setup in `Program.cs`:
+
+```csharp
+Breakpoints.Init(app.Services.GetRequiredService<TracekitSdk>());
+```
+
+Use at call sites:
+
+```csharp
+Breakpoints.Capture("payment-failed", new() { ["orderId"] = orderId, ["error"] = ex.Message });
+```
+
+See the `tracekit-code-monitoring` skill for the full pattern across all languages.
+
 **Global exception handler middleware** (for custom error responses):
 
 ```csharp

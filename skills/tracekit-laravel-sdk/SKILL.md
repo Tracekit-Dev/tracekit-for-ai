@@ -237,6 +237,60 @@ Tracekit::setSpanAttribute('payment.method', 'stripe');
 Tracekit::setSpanAttribute('order.total', $order->total);
 ```
 
+## Step 6b: Snapshot Capture (Code Monitoring)
+
+For programmatic snapshots, **use the SnapshotClient directly** — do not call through the SDK wrapper or facade. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
+
+Create a `Breakpoints` helper (e.g., `app/Support/Breakpoints.php`):
+
+```php
+<?php
+
+namespace App\Support;
+
+class Breakpoints
+{
+    private static $snapshotClient = null;
+
+    public static function init($sdk): void
+    {
+        if ($sdk !== null) {
+            self::$snapshotClient = $sdk->snapshotClient();
+        }
+    }
+
+    public static function capture(string $name, array $data): void
+    {
+        if (self::$snapshotClient === null) {
+            return;
+        }
+        self::$snapshotClient->checkAndCapture($name, $data);
+    }
+}
+```
+
+Initialize in a service provider or `AppServiceProvider::boot()`:
+
+```php
+use App\Support\Breakpoints;
+use Tracekit\Laravel\Facades\Tracekit;
+
+public function boot(): void
+{
+    Breakpoints::init(Tracekit::sdk());
+}
+```
+
+Use at call sites:
+
+```php
+use App\Support\Breakpoints;
+
+Breakpoints::capture('payment-failed', ['order_id' => $orderId, 'error' => $e->getMessage()]);
+```
+
+See the `tracekit-code-monitoring` skill for the full pattern across all languages.
+
 ## Step 7: Database Query Tracing
 
 Database queries are automatically traced when `tracing.database` is `true` in `config/tracekit.php`. Each query generates a span with:

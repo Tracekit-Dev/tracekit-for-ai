@@ -305,6 +305,47 @@ try {
 }
 ```
 
+## Step 4b: Snapshot Capture (Code Monitoring)
+
+For programmatic snapshots, **use the SnapshotClient directly** — do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
+
+Create a `Breakpoints` utility class:
+
+```java
+import dev.tracekit.SnapshotClient;
+import dev.tracekit.Tracekit;
+import java.util.Map;
+
+public final class Breakpoints {
+    private static SnapshotClient snapshotClient;
+
+    public static void init(Tracekit sdk) {
+        if (sdk != null) {
+            snapshotClient = sdk.snapshotClient();
+        }
+    }
+
+    public static void capture(String name, Map<String, Object> data) {
+        if (snapshotClient == null) return;
+        snapshotClient.checkAndCapture(name, data);
+    }
+}
+```
+
+Initialize after SDK setup:
+
+```java
+Breakpoints.init(tracekit);
+```
+
+Use at call sites:
+
+```java
+Breakpoints.capture("payment-failed", Map.of("orderId", orderId, "error", e.getMessage()));
+```
+
+See the `tracekit-code-monitoring` skill for the full pattern across all languages.
+
 ## Step 5: JDBC Database Tracing
 
 For Spring Boot, JDBC tracing is automatic via the auto-configuration.

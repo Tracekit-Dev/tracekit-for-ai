@@ -189,6 +189,56 @@ defer span.End()
 // ... your business logic ...
 ```
 
+## Step 5b: Snapshot Capture (Code Monitoring)
+
+For programmatic snapshots, **use the SnapshotClient directly** — do not call through the SDK wrapper. The SDK uses `runtime.Caller(2)` internally to identify the call site. Adding extra layers shifts the frame count and causes snapshots to report the wrong source location.
+
+Create a thin wrapper package (e.g., `internal/breakpoints/breakpoints.go`):
+
+```go
+package breakpoints
+
+import (
+    "context"
+
+    "github.com/Tracekit-Dev/go-sdk/tracekit"
+)
+
+var snapshotClient *tracekit.SnapshotClient
+
+// Init stores the snapshot client. No-op when sdk is nil.
+func Init(s *tracekit.SDK) {
+    if s != nil {
+        snapshotClient = s.SnapshotClient()
+    }
+}
+
+// Capture fires a code monitoring snapshot. No-op when tracing is disabled.
+func Capture(ctx context.Context, name string, data map[string]interface{}) {
+    if snapshotClient == nil {
+        return
+    }
+    snapshotClient.CheckAndCaptureWithContext(ctx, name, data)
+}
+```
+
+Initialize after SDK setup in `main()`:
+
+```go
+breakpoints.Init(sdk)
+```
+
+Use at call sites:
+
+```go
+breakpoints.Capture(ctx, "payment-failed", map[string]interface{}{
+    "order_id": order.ID,
+    "error":    err.Error(),
+})
+```
+
+See the `tracekit-code-monitoring` skill for the full pattern across all languages.
+
 ## Step 6: Verification
 
 After integrating, verify traces are flowing:

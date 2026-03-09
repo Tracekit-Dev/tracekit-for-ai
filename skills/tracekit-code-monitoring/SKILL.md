@@ -210,51 +210,332 @@ To disable PII scrubbing (not recommended for production):
 captureConfig: { piiScrubbing: false }
 ```
 
-## Step 5: Programmatic Breakpoints (SDK API)
+## Step 5: Programmatic Snapshots (SDK API)
 
-Set breakpoints programmatically from your code instead of the dashboard. Useful for CI/CD integration, automated debugging workflows, or temporary debug sessions.
+Capture snapshots programmatically from your code to debug specific code paths. This is the recommended approach for adding observability to critical business logic, error handlers, and conditional paths.
+
+**Important: Use the SnapshotClient directly.** All backend SDKs expose a `SnapshotClient` (or equivalent) that you should use instead of calling through the main SDK wrapper. This preserves correct stack frame attribution -- the SDK uses `runtime.Caller(2)` (or equivalent) internally to identify the call site. Adding extra layers between your code and the SnapshotClient causes the stack frame to resolve to the wrapper instead of the actual call site.
+
+**Recommended pattern:** Create a thin wrapper package that holds the SnapshotClient and provides a simple `Capture()` function. This keeps the call chain short:
+
+```
+call site → your Capture() → SnapshotClient.CheckAndCaptureWithContext()
+```
 
 ### Go
 
+Create a `breakpoints` package (e.g., `internal/breakpoints/breakpoints.go`):
+
 ```go
-tracekit.SetBreakpoint(tracekit.BreakpointConfig{
-    File:      "main.go",
-    Line:      42,
-    Condition: "err != nil",
-    RateLimit: 5,          // max 5 snapshots/min
-    ExpiresIn: 2 * time.Hour,
-})
+package breakpoints
+
+import (
+    "context"
+
+    "github.com/Tracekit-Dev/go-sdk/tracekit"
+)
+
+// snapshotClient holds the TraceKit snapshot client directly.
+// We bypass SDK.CheckAndCaptureWithContext to keep the correct
+// runtime.Caller frame count — the SDK uses runtime.Caller(2)
+// internally, so the chain must be:
+//
+//    call site → Capture → SnapshotClient.CheckAndCaptureWithContext
+//
+// If we went through the SDK wrapper, Caller(2) would resolve to
+// this file instead of the actual call site.
+var snapshotClient *tracekit.SnapshotClient
+
+// Init stores the TraceKit snapshot client for code monitoring.
+// When sdk is nil (tracing disabled), Capture is a no-op.
+func Init(s *tracekit.SDK) {
+    if s != nil {
+        snapshotClient = s.SnapshotClient()
+    }
+}
+
+// Capture fires a code monitoring snapshot. No-op when tracing is disabled.
+func Capture(ctx context.Context, name string, data map[string]interface{}) {
+    if snapshotClient == nil {
+        return
+    }
+    snapshotClient.CheckAndCaptureWithContext(ctx, name, data)
+}
+```
+
+Initialize in `main()` after SDK setup:
+
+```go
+import "myapp/internal/breakpoints"
+
+func main() {
+    sdk, err := tracekit.NewSDK(&tracekit.Config{
+        APIKey:               os.Getenv("TRACEKIT_API_KEY"),
+        ServiceName:          "my-go-service",
+        Endpoint:             "https://app.tracekit.dev/v1/traces",
+        EnableCodeMonitoring: true,
+    })
+    if err != nil {
+        log.Fatalf("tracekit init failed: %v", err)
+    }
+    defer sdk.Shutdown(context.Background())
+
+    // Initialize the snapshot wrapper
+    breakpoints.Init(sdk)
+
+    // ... register routes
+}
+```
+
+Use at call sites:
+
+```go
+func handlePayment(ctx context.Context, order Order) error {
+    result, err := processPayment(order)
+    if err != nil {
+        breakpoints.Capture(ctx, "payment-failed", map[string]interface{}{
+            "order_id": order.ID,
+            "error":    err.Error(),
+            "amount":   order.Total,
+        })
+        return err
+    }
+
+    breakpoints.Capture(ctx, "payment-success", map[string]interface{}{
+        "order_id":       order.ID,
+        "transaction_id": result.TransactionID,
+    })
+    return nil
+}
 ```
 
 ### Node.js
 
-```javascript
-const tracekit = require('@tracekit/node');
+Create a `breakpoints` module (e.g., `src/lib/breakpoints.ts`):
 
-tracekit.setBreakpoint({
-  file: 'src/handlers/payment.js',
-  line: 42,
-  condition: 'err !== null',
-  rateLimit: 5,
-  expiresIn: '2h',
+```typescript
+import * as tracekit from '@tracekit/node-apm';
+
+// Hold the snapshot client directly to preserve correct stack frame attribution.
+// The SDK uses stack inspection internally — calling through the SDK wrapper
+// adds an extra frame that shifts the reported call site.
+let snapshotClient: tracekit.SnapshotClient | null = null;
+
+export function init(sdk: tracekit.SDK): void {
+  snapshotClient = sdk.snapshotClient();
+}
+
+export function capture(name: string, data: Record<string, unknown>): void {
+  if (!snapshotClient) return;
+  snapshotClient.checkAndCapture(name, data);
+}
+```
+
+Initialize after SDK setup:
+
+```typescript
+import * as tracekit from '@tracekit/node-apm';
+import * as breakpoints from './lib/breakpoints';
+
+const sdk = tracekit.init({
+  apiKey: process.env.TRACEKIT_API_KEY!,
+  serviceName: 'my-node-service',
+  endpoint: 'https://app.tracekit.dev/v1/traces',
+  enableCodeMonitoring: true,
 });
+
+breakpoints.init(sdk);
+```
+
+Use at call sites:
+
+```typescript
+import { capture } from './lib/breakpoints';
+
+async function handlePayment(order: Order) {
+  try {
+    const result = await processPayment(order);
+    capture('payment-success', { orderId: order.id, transactionId: result.id });
+  } catch (err) {
+    capture('payment-failed', { orderId: order.id, error: String(err) });
+    throw err;
+  }
+}
 ```
 
 ### Python
 
-```python
-import tracekit_apm
+Create a `breakpoints` module (e.g., `app/breakpoints.py`):
 
-tracekit_apm.set_breakpoint(
-    file='app/handlers/payment.py',
-    line=42,
-    condition='err is not None',
-    rate_limit=5,
-    expires_in='2h',
-)
+```python
+import tracekit
+
+# Hold the snapshot client directly to preserve correct stack frame attribution.
+# The SDK uses stack inspection internally — calling through the SDK wrapper
+# adds an extra frame that shifts the reported call site.
+_snapshot_client = None
+
+
+def init(sdk):
+    """Store the snapshot client. No-op when sdk is None (tracing disabled)."""
+    global _snapshot_client
+    if sdk is not None:
+        _snapshot_client = sdk.snapshot_client()
+
+
+def capture(name: str, data: dict):
+    """Fire a code monitoring snapshot. No-op when tracing is disabled."""
+    if _snapshot_client is None:
+        return
+    _snapshot_client.check_and_capture(name, data)
 ```
 
-Programmatic breakpoints appear in the dashboard alongside dashboard-created ones and can be managed from either location.
+Initialize after SDK setup:
+
+```python
+import tracekit
+from app.breakpoints import init as init_breakpoints
+
+sdk = tracekit.init(
+    api_key=os.getenv("TRACEKIT_API_KEY"),
+    service_name="my-python-service",
+    endpoint="https://app.tracekit.dev/v1/traces",
+    enable_code_monitoring=True,
+)
+
+init_breakpoints(sdk)
+```
+
+Use at call sites:
+
+```python
+from app.breakpoints import capture
+
+def handle_payment(order):
+    try:
+        result = process_payment(order)
+        capture("payment-success", {"order_id": order.id, "transaction_id": result.id})
+    except Exception as e:
+        capture("payment-failed", {"order_id": order.id, "error": str(e)})
+        raise
+```
+
+### PHP
+
+Create a `Breakpoints` helper (e.g., `src/Breakpoints.php`):
+
+```php
+<?php
+
+namespace App;
+
+class Breakpoints
+{
+    private static $snapshotClient = null;
+
+    /**
+     * Store the snapshot client directly to preserve correct stack frame attribution.
+     */
+    public static function init($sdk): void
+    {
+        if ($sdk !== null) {
+            self::$snapshotClient = $sdk->snapshotClient();
+        }
+    }
+
+    /**
+     * Fire a code monitoring snapshot. No-op when tracing is disabled.
+     */
+    public static function capture(string $name, array $data): void
+    {
+        if (self::$snapshotClient === null) {
+            return;
+        }
+        self::$snapshotClient->checkAndCapture($name, $data);
+    }
+}
+```
+
+### Java
+
+Create a `Breakpoints` utility class (e.g., `src/main/java/com/myapp/Breakpoints.java`):
+
+```java
+import dev.tracekit.SnapshotClient;
+import dev.tracekit.Tracekit;
+
+/**
+ * Thin wrapper around SnapshotClient to preserve correct stack frame attribution.
+ * The SDK uses stack inspection internally — calling through the SDK wrapper
+ * adds an extra frame that shifts the reported call site.
+ */
+public final class Breakpoints {
+    private static SnapshotClient snapshotClient;
+
+    public static void init(Tracekit sdk) {
+        if (sdk != null) {
+            snapshotClient = sdk.snapshotClient();
+        }
+    }
+
+    public static void capture(String name, Map<String, Object> data) {
+        if (snapshotClient == null) return;
+        snapshotClient.checkAndCapture(name, data);
+    }
+}
+```
+
+### .NET
+
+Create a `Breakpoints` static helper (e.g., `Breakpoints.cs`):
+
+```csharp
+using TraceKit;
+
+/// <summary>
+/// Thin wrapper around SnapshotClient to preserve correct stack frame attribution.
+/// The SDK uses stack inspection internally — calling through the SDK wrapper
+/// adds an extra frame that shifts the reported call site.
+/// </summary>
+public static class Breakpoints
+{
+    private static ISnapshotClient? _snapshotClient;
+
+    public static void Init(TracekitSdk sdk)
+    {
+        _snapshotClient = sdk.SnapshotClient();
+    }
+
+    public static void Capture(string name, Dictionary<string, object> data)
+    {
+        _snapshotClient?.CheckAndCapture(name, data);
+    }
+}
+```
+
+### Ruby
+
+Create a `Breakpoints` module (e.g., `lib/breakpoints.rb`):
+
+```ruby
+module Breakpoints
+  # Hold the snapshot client directly to preserve correct stack frame attribution.
+  @snapshot_client = nil
+
+  def self.init(sdk)
+    @snapshot_client = sdk&.snapshot_client
+  end
+
+  def self.capture(name, data = {})
+    return unless @snapshot_client
+    @snapshot_client.check_and_capture(name, data)
+  end
+end
+```
+
+### Dashboard Breakpoints
+
+You can also set breakpoints from the dashboard without any code changes. See Step 2 above for the dashboard workflow. Programmatic snapshots captured via the wrapper pattern above appear in the dashboard alongside dashboard-created breakpoints and can be filtered, compared, and linked to traces.
 
 ## Step 6: Viewing Snapshots
 

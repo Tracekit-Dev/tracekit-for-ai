@@ -260,6 +260,44 @@ app.post('/api/orders', async (req, res) => {
 });
 ```
 
+## Step 5b: Snapshot Capture (Code Monitoring)
+
+For programmatic snapshots, **use the SnapshotClient directly** — do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
+
+Create a thin wrapper module (e.g., `src/lib/breakpoints.ts`):
+
+```typescript
+import * as tracekit from '@tracekit/node-apm';
+
+let snapshotClient: tracekit.SnapshotClient | null = null;
+
+export function init(sdk: tracekit.SDK): void {
+  snapshotClient = sdk.snapshotClient();
+}
+
+export function capture(name: string, data: Record<string, unknown>): void {
+  if (!snapshotClient) return;
+  snapshotClient.checkAndCapture(name, data);
+}
+```
+
+Initialize after SDK setup:
+
+```typescript
+import * as breakpoints from './lib/breakpoints';
+breakpoints.init(sdk);
+```
+
+Use at call sites:
+
+```typescript
+import { capture } from './lib/breakpoints';
+
+capture('payment-failed', { orderId: order.id, error: String(err) });
+```
+
+See the `tracekit-code-monitoring` skill for the full pattern across all languages.
+
 ## Step 6: Verification
 
 After integrating, verify traces are flowing:

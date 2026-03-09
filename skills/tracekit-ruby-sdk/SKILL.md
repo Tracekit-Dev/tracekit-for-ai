@@ -230,17 +230,40 @@ rescue => e
 end
 ```
 
-For adding context to traces, use snapshots:
+## Step 5b: Snapshot Capture (Code Monitoring)
+
+For programmatic snapshots, **use the snapshot client directly** — do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
+
+Create a thin wrapper module (e.g., `lib/breakpoints.rb`):
 
 ```ruby
-sdk = Tracekit.sdk
+module Breakpoints
+  @snapshot_client = nil
 
-sdk.capture_snapshot("process-order", {
-  order_id: order.id,
-  user_id: current_user.id,
-  total: order.total
-})
+  def self.init(sdk)
+    @snapshot_client = sdk&.snapshot_client
+  end
+
+  def self.capture(name, data = {})
+    return unless @snapshot_client
+    @snapshot_client.check_and_capture(name, data)
+  end
+end
 ```
+
+Initialize after SDK setup:
+
+```ruby
+Breakpoints.init(Tracekit.sdk)
+```
+
+Use at call sites:
+
+```ruby
+Breakpoints.capture("payment-failed", { order_id: order.id, error: e.message })
+```
+
+See the `tracekit-code-monitoring` skill for the full pattern across all languages.
 
 ## Step 6: Verification
 
