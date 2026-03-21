@@ -467,18 +467,18 @@ Add this when the user:
 Add the TraceKit LLM interceptor to the OkHttpClient used for LLM API calls:
 
 ```java
-import dev.tracekit.llm.LlmInterceptor;
+import dev.tracekit.llm.TracekitLlmInterceptor;
 import dev.tracekit.llm.LlmConfig;
 import okhttp3.OkHttpClient;
 
 // Default config (content capture off)
 OkHttpClient llmClient = new OkHttpClient.Builder()
-    .addInterceptor(new LlmInterceptor())
+    .addInterceptor(new TracekitLlmInterceptor())
     .build();
 
 // With custom config
 OkHttpClient llmClient = new OkHttpClient.Builder()
-    .addInterceptor(new LlmInterceptor(LlmConfig.builder()
+    .addInterceptor(new TracekitLlmInterceptor(LlmConfig.builder()
         .captureContent(true)  // Enable prompt/completion capture
         .build()))
     .build();
