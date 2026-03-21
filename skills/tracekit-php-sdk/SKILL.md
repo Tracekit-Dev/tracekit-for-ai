@@ -353,6 +353,53 @@ Once your PHP application is traced, consider:
 - **Distributed Tracing** -- Connect traces across multiple services for full request visibility
 - **Frontend Observability** -- Add `@tracekit/browser` to your frontend for end-to-end trace correlation
 
+## LLM Instrumentation (Auto-Discovery)
+
+TraceKit automatically instruments OpenAI and Anthropic API calls in PHP applications. No manual setup required — the SDK detects LLM libraries at init time via Guzzle middleware.
+
+### When To Use
+
+Add this when the user:
+- Uses OpenAI or Anthropic APIs in their PHP application
+- Wants to monitor LLM cost, tokens, and latency
+- Asks about AI observability in PHP
+
+### How It Works
+
+LLM instrumentation is enabled by default when the SDK initializes. It registers Guzzle middleware that detects requests to `api.openai.com` and `api.anthropic.com` and creates traced spans with GenAI attributes.
+
+### Configuration
+
+```php
+$client = new TracekitClient([
+    'api_key' => getenv('TRACEKIT_API_KEY'),
+    'llm' => [
+        'enabled' => true,        // Master toggle (default: true)
+        'openai' => true,         // OpenAI instrumentation
+        'anthropic' => true,      // Anthropic instrumentation
+        'capture_content' => false // Capture prompts/completions (default: false)
+    ]
+]);
+```
+
+### Environment Variable
+
+Set `TRACEKIT_LLM_CAPTURE_CONTENT=true` to enable prompt/completion capture without code changes. Content is PII-scrubbed automatically.
+
+### Captured Attributes
+
+- `gen_ai.system` — Provider name (openai/anthropic)
+- `gen_ai.request.model` / `gen_ai.response.model` — Model name
+- `gen_ai.usage.input_tokens` / `gen_ai.usage.output_tokens` — Token counts
+- `gen_ai.response.finish_reasons` — Completion stop reason
+- Tool calls recorded as span events
+
+### Verify
+
+Check the LLM dashboard at `https://app.tracekit.dev/ai/llm` for cost, token, and latency data.
+
+Full docs: `https://app.tracekit.dev/docs/languages/php#llm-instrumentation`
+
 ## References
 
 - PHP SDK docs: `https://app.tracekit.dev/docs/languages/php`

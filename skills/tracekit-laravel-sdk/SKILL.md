@@ -402,6 +402,51 @@ Once your Laravel application is traced, consider:
 - **Distributed Tracing** -- Connect traces across multiple services for full request visibility
 - **Frontend Observability** -- Add `@tracekit/browser` to your frontend for end-to-end trace correlation
 
+## LLM Instrumentation (Auto-Discovery)
+
+TraceKit automatically instruments OpenAI and Anthropic API calls in Laravel applications. The service provider registers LLM event listeners — no manual setup required.
+
+### When To Use
+
+Add this when the user:
+- Uses OpenAI or Anthropic APIs in their Laravel application
+- Wants to monitor LLM cost, tokens, and latency
+- Asks about AI observability in Laravel
+
+### How It Works
+
+The `TracekitServiceProvider` registers an `LlmListener` in `boot()` that listens to Laravel HTTP client `RequestSending` and `ResponseReceived` events. It detects LLM provider requests by host and creates traced spans.
+
+### Configuration
+
+In `config/tracekit.php`:
+
+```php
+'features' => [
+    'llm' => true,  // Enable LLM instrumentation (default: true)
+],
+
+'llm' => [
+    'openai' => true,
+    'anthropic' => true,
+    'capture_content' => false,
+],
+```
+
+### Environment Variable
+
+Set `TRACEKIT_LLM_CAPTURE_CONTENT=true` to enable prompt/completion capture without code changes.
+
+### Captured Attributes
+
+Same as PHP SDK — `gen_ai.system`, `gen_ai.request.model`, token counts, finish reasons, tool calls as span events.
+
+### Verify
+
+Check the LLM dashboard at `https://app.tracekit.dev/ai/llm` for cost, token, and latency data.
+
+Full docs: `https://app.tracekit.dev/docs/languages/laravel#llm-instrumentation`
+
 ## References
 
 - Laravel SDK docs: `https://app.tracekit.dev/docs/languages/laravel`

@@ -320,6 +320,52 @@ Once your Ruby app is traced, consider:
 - **Distributed Tracing** — Connect traces across multiple services for full request visibility
 - **Frontend Observability** — Add `@tracekit/browser` to your frontend for end-to-end trace correlation
 
+## LLM Instrumentation (Auto-Discovery)
+
+TraceKit automatically instruments OpenAI and Anthropic API calls in Ruby applications via `Module#prepend`. No manual setup required.
+
+### When To Use
+
+Add this when the user:
+- Uses the `ruby-openai` or `anthropic-sdk-ruby` gems
+- Wants to monitor LLM cost, tokens, and latency
+- Asks about AI observability in Ruby
+
+### How It Works
+
+At SDK init, TraceKit detects installed LLM gems and patches them with `Module#prepend`. OpenAI's `Client#chat` and Anthropic's `Client::Messages#create` methods are wrapped to create traced spans.
+
+### Configuration
+
+```ruby
+Tracekit.configure do |config|
+  config.llm = {
+    enabled: true,
+    openai: true,
+    anthropic: true,
+    capture_content: false
+  }
+end
+```
+
+### Environment Variable
+
+Set `TRACEKIT_LLM_CAPTURE_CONTENT=true` to enable prompt/completion capture without code changes.
+
+### Captured Attributes
+
+- `gen_ai.system` — Provider name (openai/anthropic)
+- `gen_ai.request.model` / `gen_ai.response.model` — Model name
+- `gen_ai.usage.input_tokens` / `gen_ai.usage.output_tokens` — Token counts
+- `gen_ai.response.finish_reasons` — Completion stop reason
+- Tool calls recorded as span events
+
+### Verify
+
+Check the LLM dashboard at `https://app.tracekit.dev/ai/llm` for cost, token, and latency data.
+
+Full docs: `https://app.tracekit.dev/docs/languages/ruby#llm-instrumentation`
+
 ## References
 
 - Ruby SDK docs: `https://app.tracekit.dev/docs/languages/ruby`
