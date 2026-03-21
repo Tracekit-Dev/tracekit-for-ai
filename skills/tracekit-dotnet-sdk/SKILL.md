@@ -1,6 +1,6 @@
 ---
 name: tracekit-dotnet-sdk
-description: Sets up TraceKit APM in .NET applications for automatic distributed tracing, error capture, and code monitoring. Supports ASP.NET Core with dependency injection and middleware patterns. Use when the user asks to add TraceKit, add observability, instrument a .NET service, or configure APM in a C# project.
+description: Sets up TraceKit APM in .NET applications for automatic distributed tracing, error capture, and code monitoring. Supports ASP.NET Core with dependency injection and middleware patterns. Includes LLM instrumentation via DelegatingHandler for OpenAI, Anthropic, and Azure OpenAI API call monitoring. Use when the user asks to add TraceKit, add observability, instrument a .NET service, or configure APM in a C# project.
 ---
 
 # TraceKit .NET SDK Setup
@@ -13,6 +13,8 @@ Use this skill when the user asks to:
 - Configure TraceKit API keys in a .NET project
 - Debug production .NET services with live breakpoints
 - Set up code monitoring in a .NET app
+- Monitor OpenAI, Anthropic, or Azure OpenAI API calls in a .NET service
+- Add LLM observability to a .NET application
 
 ## Non-Negotiable Rules
 
@@ -393,6 +395,58 @@ Fix: Use a unique `ServiceName` per deployed service. Avoid generic names like `
 Symptoms: HTTP requests show traces but database queries do not.
 
 Fix: Ensure `.AddTraceKitInterceptor()` is called on your `DbContextOptions`. If using multiple contexts, add it to each one.
+
+## LLM Instrumentation (Manual Setup)
+
+TraceKit can instrument OpenAI, Anthropic, and Azure OpenAI API calls via HttpClient DelegatingHandler.
+
+### When To Use
+
+Add this when the user:
+- Uses OpenAI, Anthropic, or Azure OpenAI APIs in their .NET service
+- Wants to monitor LLM cost, tokens, and latency
+- Asks about AI observability in .NET
+
+### Setup -- OpenAI / Anthropic
+
+```csharp
+using TraceKit.Core.LLM;
+
+var handler = new LlmDelegatingHandler(new HttpClientHandler());
+var httpClient = new HttpClient(handler);
+
+// With custom config
+var handler = new LlmDelegatingHandler(new LlmConfig
+{
+    CaptureContent = true,  // Enable prompt/completion capture
+}, new HttpClientHandler());
+```
+
+### Setup -- Azure OpenAI
+
+```csharp
+using TraceKit.Core.LLM;
+using Azure.AI.OpenAI;
+
+var client = new AzureOpenAIClient(
+    new Uri("https://your-resource.openai.azure.com"),
+    new AzureKeyCredential(Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY")),
+    new AzureOpenAIClientOptions()
+);
+AzureOpenAiInstrumentation.Instrument(client);
+```
+
+### Environment Variable
+
+Set `TRACEKIT_LLM_CAPTURE_CONTENT=true` to enable prompt/completion capture without code changes.
+
+### Captured Attributes
+
+LLM spans include: `gen_ai.system`, `gen_ai.request.model`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, `gen_ai.response.finish_reasons`. Streaming responses produce a single span with accumulated token counts.
+
+### Verification
+
+After adding the handler, make an LLM API call and verify the span appears in the TraceKit dashboard under **LLM Observability** (`/ai/llm`).
 
 ## Next Steps
 

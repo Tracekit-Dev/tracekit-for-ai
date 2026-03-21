@@ -1,6 +1,6 @@
 ---
 name: tracekit-java-sdk
-description: Sets up TraceKit APM in Java applications for automatic distributed tracing, error capture, and code monitoring. Supports Spring Boot and Micronaut frameworks with Maven and Gradle build systems. Use when the user asks to add TraceKit, add observability, instrument a Java service, or configure APM in a Java project.
+description: Sets up TraceKit APM in Java applications for automatic distributed tracing, error capture, and code monitoring. Supports Spring Boot and Micronaut frameworks with Maven and Gradle build systems. Includes LLM instrumentation via OkHttp interceptor for OpenAI and Anthropic API call monitoring. Use when the user asks to add TraceKit, add observability, instrument a Java service, or configure APM in a Java project.
 ---
 
 # TraceKit Java SDK Setup
@@ -14,6 +14,8 @@ Use this skill when the user asks to:
 - Debug production Java services with live breakpoints
 - Set up code monitoring in a Java app
 - Add tracing to a Spring Boot or Micronaut application
+- Monitor OpenAI or Anthropic API calls in a Java service
+- Add LLM observability to a Java application
 
 ## Non-Negotiable Rules
 
@@ -448,6 +450,53 @@ Fix: Ensure `TRACEKIT_API_KEY` is exported in your shell, `.env` file, Docker Co
 Symptoms: Traces appear under the wrong service in the dashboard.
 
 Fix: Use a unique `service-name` per deployed service. Avoid generic names like `"app"` or `"service"`.
+
+## LLM Instrumentation (Manual Setup)
+
+TraceKit can instrument OpenAI and Anthropic API calls made via OkHttp. This requires manual interceptor setup.
+
+### When To Use
+
+Add this when the user:
+- Uses OpenAI or Anthropic APIs in their Java service
+- Wants to monitor LLM cost, tokens, and latency
+- Asks about AI observability in Java
+
+### Setup
+
+Add the TraceKit LLM interceptor to the OkHttpClient used for LLM API calls:
+
+```java
+import dev.tracekit.llm.LlmInterceptor;
+import dev.tracekit.llm.LlmConfig;
+import okhttp3.OkHttpClient;
+
+// Default config (content capture off)
+OkHttpClient llmClient = new OkHttpClient.Builder()
+    .addInterceptor(new LlmInterceptor())
+    .build();
+
+// With custom config
+OkHttpClient llmClient = new OkHttpClient.Builder()
+    .addInterceptor(new LlmInterceptor(LlmConfig.builder()
+        .captureContent(true)  // Enable prompt/completion capture
+        .build()))
+    .build();
+```
+
+Pass this client to your OpenAI or Anthropic SDK's HTTP client configuration.
+
+### Environment Variable
+
+Set `TRACEKIT_LLM_CAPTURE_CONTENT=true` to enable prompt/completion capture without code changes.
+
+### Captured Attributes
+
+LLM spans include: `gen_ai.system`, `gen_ai.request.model`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, `gen_ai.response.finish_reasons`. Streaming responses produce a single span with accumulated token counts.
+
+### Verification
+
+After adding the interceptor, make an LLM API call and verify the span appears in the TraceKit dashboard under **LLM Observability** (`/ai/llm`).
 
 ## Next Steps
 
