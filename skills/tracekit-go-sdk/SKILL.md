@@ -1,6 +1,6 @@
 ---
 name: tracekit-go-sdk
-description: Sets up TraceKit APM in Go services for automatic distributed tracing, error capture, and code monitoring. Supports Gin, Echo, and net/http frameworks. Use when the user asks to add TraceKit, add observability, instrument a Go service, or configure APM in a Go project.
+description: Sets up TraceKit APM in Go services for automatic distributed tracing, error capture, and code monitoring. Supports Gin, Echo, and net/http frameworks. Includes LLM instrumentation via http.RoundTripper transport wrapper for OpenAI and Anthropic API call monitoring. Use when the user asks to add TraceKit, add observability, instrument a Go service, or configure APM in a Go project.
 ---
 
 # TraceKit Go SDK Setup
@@ -14,6 +14,8 @@ Use this skill when the user asks to:
 - Configure TraceKit API keys in a Go project
 - Debug production Go services with live breakpoints
 - Set up code monitoring in a Go app
+- Monitor OpenAI or Anthropic API calls in a Go service
+- Add LLM observability to a Go application
 
 ## Non-Negotiable Rules
 
@@ -275,6 +277,59 @@ Fix: Ensure `TRACEKIT_API_KEY` is exported in your shell, `.env` file, Docker Co
 Symptoms: Traces appear under the wrong service in the dashboard.
 
 Fix: Use a unique `ServiceName` per deployed service. Avoid generic names like `"app"` or `"server"`.
+
+## LLM Instrumentation (Manual Setup)
+
+TraceKit can instrument OpenAI and Anthropic API calls made via Go's `net/http` using an `http.RoundTripper` transport wrapper.
+
+### When To Use
+
+Add this when the user:
+- Uses OpenAI or Anthropic APIs in their Go service
+- Wants to monitor LLM cost, tokens, and latency
+- Asks about AI observability in Go
+
+### Setup
+
+Wrap the HTTP client's transport with `NewLLMTransport` and pass it to the OpenAI or Anthropic Go SDK:
+
+```go
+import (
+    tracekit "github.com/Tracekit-Dev/go-sdk/tracekit"
+    "net/http"
+)
+
+// Default config (content capture off)
+transport := tracekit.NewLLMTransport(nil)
+httpClient := &http.Client{Transport: transport}
+
+// With content capture enabled
+transport := tracekit.NewLLMTransport(nil, tracekit.WithCaptureContent(true))
+httpClient := &http.Client{Transport: transport}
+
+// With full custom config
+transport := tracekit.NewLLMTransport(nil, tracekit.WithLLMConfig(tracekit.LLMConfig{
+    Enabled:        true,
+    OpenAI:         true,
+    Anthropic:      true,
+    CaptureContent: false,
+}))
+httpClient := &http.Client{Transport: transport}
+```
+
+Pass this `httpClient` to your OpenAI or Anthropic SDK's HTTP client configuration. If `nil` is passed as the base transport, `http.DefaultTransport` is used.
+
+### Environment Variable
+
+Set `TRACEKIT_LLM_CAPTURE_CONTENT=true` to enable prompt/completion capture without code changes.
+
+### Captured Attributes
+
+LLM spans include: `gen_ai.system`, `gen_ai.request.model`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, `gen_ai.response.finish_reasons`. Streaming responses produce a single span with accumulated token counts. Tool calls are recorded as `gen_ai.tool.call` span events.
+
+### Verification
+
+After adding the transport, make an LLM API call and verify the span appears in the TraceKit dashboard under **LLM Observability** (`/ai/llm`).
 
 ## Next Steps
 

@@ -1,6 +1,6 @@
 ---
 name: tracekit-ruby-sdk
-description: Sets up TraceKit APM in Ruby applications for automatic distributed tracing, error capture, and code monitoring. Supports Rails and Sinatra frameworks. Use when the user asks to add TraceKit, add observability, instrument a Ruby app, or configure APM in a Ruby/Rails project.
+description: Sets up TraceKit APM in Ruby applications for automatic distributed tracing, error capture, and code monitoring. Supports Rails and Sinatra frameworks. Includes automatic LLM instrumentation via Module#prepend for OpenAI and Anthropic API call monitoring. Use when the user asks to add TraceKit, add observability, instrument a Ruby app, or configure APM in a Ruby/Rails project.
 ---
 
 # TraceKit Ruby SDK Setup
