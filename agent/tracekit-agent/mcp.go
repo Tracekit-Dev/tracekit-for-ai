@@ -215,36 +215,17 @@ func parseID(raw json.RawMessage) interface{} {
 	return out
 }
 func readMessage(r *bufio.Reader) ([]byte, error) {
-	length := 0
 	for {
-		line, err := r.ReadString('\n')
+		line, err := r.ReadBytes('\n')
 		if err != nil {
 			return nil, err
 		}
-		line = strings.TrimRight(line, "\r\n")
-		if line == "" {
-			break
-		}
-		parts := strings.SplitN(line, ":", 2)
-		if len(parts) != 2 {
+		line = bytes.TrimSpace(line)
+		if len(line) == 0 {
 			continue
 		}
-		if strings.EqualFold(parts[0], "Content-Length") {
-			parsed, err := strconv.Atoi(strings.TrimSpace(parts[1]))
-			if err != nil {
-				return nil, fmt.Errorf("invalid Content-Length %q", strings.TrimSpace(parts[1]))
-			}
-			length = parsed
-		}
+		return line, nil
 	}
-	if length <= 0 {
-		return nil, fmt.Errorf("missing Content-Length header")
-	}
-	payload := make([]byte, length)
-	if _, err := io.ReadFull(r, payload); err != nil {
-		return nil, err
-	}
-	return payload, nil
 }
 func writeResponse(resp rpcResponse) {
 	if resp.JSONRPC == "" {
@@ -254,10 +235,6 @@ func writeResponse(resp rpcResponse) {
 	if err != nil {
 		return
 	}
-	var buf bytes.Buffer
-	buf.WriteString("Content-Length: ")
-	buf.WriteString(strconv.Itoa(len(body)))
-	buf.WriteString("\r\n\r\n")
-	buf.Write(body)
-	_, _ = os.Stdout.Write(buf.Bytes())
+	body = append(body, '\n')
+	_, _ = os.Stdout.Write(body)
 }
