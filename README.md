@@ -15,12 +15,12 @@ Supports Claude Code, Cursor, and 38+ other AI tools via `npx skills add`. Skill
 
 This repo is the shared source for TraceKit AI integrations. The `skills/` content is reused across assistants, but each tool reads a different plugin or marketplace format.
 
-| Tool | Install method | Uses shared `skills/` | Metadata source |
-|------|----------------|-----------------------|-----------------|
-| npx-compatible tools | `npx skills add tracekit-dev/tracekit-for-ai` | Yes | repo skills layout |
-| Claude Code | `/install-plugin https://github.com/tracekit-dev/tracekit-for-ai` | Yes | `.claude-plugin/plugin.json` |
-| Cursor | Add `tracekit-dev/tracekit-for-ai` as a plugin source | Yes | `.cursor-plugin/plugin.json` |
-| Codex | Load [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json) and install `TraceKit` | Yes | `.agents/plugins/marketplace.json` and `plugins/tracekit/.codex-plugin/plugin.json` |
+| Tool | Skills install | MCP install | Uses shared `skills/` | Metadata source |
+|------|----------------|-------------|-----------------------|-----------------|
+| npx-compatible tools | `npx skills add tracekit-dev/tracekit-for-ai` | Tool-dependent | Yes | repo skills layout |
+| Claude Code | `/install-plugin https://github.com/tracekit-dev/tracekit-for-ai` | Load [`.mcp.json`](./.mcp.json) or run `claude mcp add --scope project tracekit ./scripts/run-tracekit-mcp.sh` | Yes | `.claude-plugin/plugin.json` and `.mcp.json` |
+| Cursor | Add `tracekit-dev/tracekit-for-ai` as a plugin source | Load [`.cursor/mcp.json`](./.cursor/mcp.json) | Yes | `.cursor-plugin/plugin.json` and `.cursor/mcp.json` |
+| Codex | Load [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json) and install `TraceKit` | Included in the Codex plugin via [`.mcp.json`](./.mcp.json) | Yes | `.agents/plugins/marketplace.json`, `plugins/tracekit/.codex-plugin/plugin.json`, and `.mcp.json` |
 
 Short version: one TraceKit repo, one shared skill set, multiple assistant-specific install paths.
 
@@ -32,15 +32,27 @@ Short version: one TraceKit repo, one shared skill set, multiple assistant-speci
 npx skills add tracekit-dev/tracekit-for-ai
 ```
 
+This installs the shared skills. MCP availability depends on whether that tool also supports loading this repo's MCP config.
+
 ### Claude Code
 
 ```
 /install-plugin https://github.com/tracekit-dev/tracekit-for-ai
 ```
 
+For MCP in Claude Code, either:
+
+```bash
+claude mcp add --scope project tracekit ./scripts/run-tracekit-mcp.sh
+```
+
+or open this repo's [`.mcp.json`](./.mcp.json) as the project MCP config.
+
 ### Cursor
 
 Add `tracekit-dev/tracekit-for-ai` as a plugin source in Cursor settings.
+
+For MCP in Cursor, load [`.cursor/mcp.json`](./.cursor/mcp.json) in the project.
 
 ### Codex
 
@@ -70,7 +82,8 @@ Successful verification signs the user into the existing account for that email 
 
 This repo now includes a local TraceKit MCP server for agents that support MCP tool servers.
 
-- MCP config: [`.mcp.json`](./.mcp.json)
+- Shared MCP config: [`.mcp.json`](./.mcp.json)
+- Cursor MCP config: [`.cursor/mcp.json`](./.cursor/mcp.json)
 - Runner script: [`scripts/run-tracekit-mcp.sh`](./scripts/run-tracekit-mcp.sh)
 - Unified agent source: [`agent/tracekit-agent`](./agent/tracekit-agent)
 - Release binaries directory: [`bin/`](./bin)
@@ -136,7 +149,15 @@ call='{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"tracekit_s
 } | ./scripts/run-tracekit-mcp.sh
 ```
 
-4. Test with Codex by loading [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json), installing `TraceKit`, and checking that the MCP server is available through the plugin.
+4. Test in Claude Code by loading [`.mcp.json`](./.mcp.json) or running:
+
+```bash
+claude mcp add --scope project tracekit ./scripts/run-tracekit-mcp.sh
+```
+
+5. Test in Cursor by loading [`.cursor/mcp.json`](./.cursor/mcp.json) for the project.
+
+6. Test with Codex by loading [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json), installing `TraceKit`, and checking that the MCP server is available through the plugin.
 
 ## Usage
 

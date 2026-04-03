@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "tracekit": {
+      "command": "./scripts/run-tracekit-mcp.sh"
+    }
+  }
+}
