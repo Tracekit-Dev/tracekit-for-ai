@@ -175,6 +175,82 @@ type triageItem struct {
 	Timestamp       string `json:"timestamp"`
 }
 
+type traceDetailResponse struct {
+	Trace traceSummary `json:"trace"`
+	Spans []span       `json:"spans"`
+}
+
+type span struct {
+	ID            string  `json:"id"`
+	SpanID        string  `json:"span_id"`
+	ParentSpanID  *string `json:"parent_span_id"`
+	ServiceName   string  `json:"service_name"`
+	OperationName string  `json:"operation_name"`
+	Kind          string  `json:"kind"`
+	StartTime     string  `json:"start_time"`
+	DurationMs    int     `json:"duration_ms"`
+	StatusCode    string  `json:"status_code"`
+}
+
+type serviceErrorsResponse struct {
+	Errors []serviceError `json:"errors"`
+}
+
+type serviceError struct {
+	SpanID     string  `json:"span_id"`
+	Operation  string  `json:"operation"`
+	Message    string  `json:"message"`
+	DurationMs float64 `json:"duration_ms"`
+	Timestamp  string  `json:"timestamp"`
+}
+
+type alertHistoryResponse struct {
+	History []alertHistoryEntry `json:"history"`
+}
+
+type alertHistoryEntry struct {
+	ID           string  `json:"id"`
+	AlertRuleID  string  `json:"alert_rule_id"`
+	TriggeredAt  string  `json:"triggered_at"`
+	CurrentValue float64 `json:"current_value"`
+	Threshold    float64 `json:"threshold"`
+	Message      string  `json:"message"`
+	Status       string  `json:"status"`
+}
+
+type channelsResponse struct {
+	Channels []channel `json:"channels"`
+}
+
+type channel struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	Enabled bool   `json:"enabled"`
+}
+
+type createAlertRuleRequest struct {
+	Name        string   `json:"name"`
+	Description string   `json:"description,omitempty"`
+	AlertType   string   `json:"alert_type"`
+	ScopeType   string   `json:"scope_type"`
+	ScopeValue  string   `json:"scope_value,omitempty"`
+	Metric      string   `json:"metric"`
+	Operator    string   `json:"operator"`
+	Threshold   float64  `json:"threshold"`
+	TimeWindow  int      `json:"time_window"`
+	Cooldown    int      `json:"cooldown"`
+	Severity    string   `json:"severity"`
+	ChannelIDs  []string `json:"channel_ids"`
+}
+
+type releaseListResponse struct {
+	Releases []map[string]interface{} `json:"releases"`
+	Total    int                      `json:"total"`
+	Page     int                      `json:"page"`
+	PageSize int                      `json:"page_size"`
+}
+
 func newTracekitClient(cfg *tracekitConfig) *tracekitClient {
 	return &tracekitClient{BaseURL: normalizeURL(cfg.Endpoint), APIKey: strings.TrimSpace(cfg.APIKey), UserID: strings.TrimSpace(cfg.UserID), HTTPClient: &http.Client{Timeout: 30 * time.Second}}
 }
@@ -373,4 +449,89 @@ func (c *tracekitClient) getTriageInbox(severity, entityType, status, team strin
 	}
 	err := c.getJSON("/v1/triage-inbox", query, &out)
 	return &out, err
+}
+
+func (c *tracekitClient) getTraceDetail(traceID string) (*traceDetailResponse, error) {
+	var out traceDetailResponse
+	err := c.getJSON("/v1/traces/"+url.PathEscape(traceID), nil, &out)
+	return &out, err
+}
+
+func (c *tracekitClient) getServiceErrors(serviceName string) (*serviceErrorsResponse, error) {
+	var out serviceErrorsResponse
+	err := c.getJSON("/v1/services/"+url.PathEscape(serviceName)+"/errors", nil, &out)
+	return &out, err
+}
+
+func (c *tracekitClient) getAlertHistory(ruleID string) (*alertHistoryResponse, error) {
+	var out alertHistoryResponse
+	err := c.getJSON("/v1/alert-rules/"+url.PathEscape(ruleID)+"/history", nil, &out)
+	return &out, err
+}
+
+func (c *tracekitClient) createAlertRule(req createAlertRuleRequest) (*alertRule, error) {
+	var out alertRule
+	if err := c.postJSON("/v1/alert-rules", req, nil, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *tracekitClient) deleteAlertRule(ruleID string) error {
+	return c.deleteRequest("/v1/alert-rules/" + url.PathEscape(ruleID))
+}
+
+func (c *tracekitClient) toggleAlertRule(ruleID string, enabled bool) error {
+	body := map[string]bool{"enabled": enabled}
+	return c.postJSON("/v1/alert-rules/"+url.PathEscape(ruleID)+"/toggle", body, nil, nil)
+}
+
+func (c *tracekitClient) getChannels() (*channelsResponse, error) {
+	var out channelsResponse
+	err := c.getJSON("/v1/channels", nil, &out)
+	return &out, err
+}
+
+func (c *tracekitClient) listReleases(page, pageSize int, service string) (*releaseListResponse, error) {
+	var out releaseListResponse
+	query := url.Values{}
+	query.Set("page", strconv.Itoa(page))
+	query.Set("page_size", strconv.Itoa(pageSize))
+	if service != "" {
+		query.Set("service", service)
+	}
+	err := c.getJSON("/v1/releases", query, &out)
+	return &out, err
+}
+
+func (c *tracekitClient) triageAction(itemID, action, entityType, note, duration string) error {
+	body := map[string]string{"entity_type": entityType}
+	if note != "" {
+		body["note"] = note
+	}
+	if duration != "" {
+		body["duration"] = duration
+	}
+	return c.postJSON("/v1/triage-inbox/"+url.PathEscape(itemID)+"/"+action, body, nil, nil)
+}
+
+func (c *tracekitClient) deleteRequest(path string) error {
+	req, err := http.NewRequest(http.MethodDelete, c.BaseURL+path, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+	c.setAuthHeaders(req)
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("request failed: %w", err)
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response: %w", err)
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return parseAPIError(resp.StatusCode, body)
+	}
+	return nil
 }
