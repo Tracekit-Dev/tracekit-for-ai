@@ -150,7 +150,7 @@ type alertRule struct {
 	Enabled    bool    `json:"enabled"`
 	AlertType  string  `json:"alert_type"`
 	ScopeType  string  `json:"scope_type"`
-	ScopeValue *string `json:"scope_value,omitempty"`
+	ScopeValue json.RawMessage `json:"scope_value,omitempty"`
 	Metric     string  `json:"metric"`
 	Operator   string  `json:"operator"`
 	Threshold  float64 `json:"threshold"`
