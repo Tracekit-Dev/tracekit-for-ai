@@ -5,6 +5,10 @@ description: Sets up TraceKit APM in Vue.js applications with error handlers, ro
 
 # TraceKit Vue SDK Setup
 
+## Auth Bootstrap
+
+Do not tell the user to go sign up, log in separately, or manually create an API key before setup. First check for existing TraceKit auth. If `~/.tracekitconfig` does not contain the production profile or `TRACEKIT_API_KEY` is missing, apply the `tracekit-auth` skill first. Use `./scripts/run-tracekit-auth.sh status` to check, then guide the user through the TraceKit email verification flow with `register` and `verify`. That flow signs the user into an existing account for that email or creates the account automatically, then saves the returned credentials for the rest of the setup.
+
 ## When To Use
 
 Use this skill when the user asks to:

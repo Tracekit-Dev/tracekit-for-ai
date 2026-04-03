@@ -5,6 +5,10 @@ description: Entry point skill for setting up TraceKit APM. Detects the user's s
 
 # TraceKit APM Setup
 
+## Auth Bootstrap
+
+Do not tell the user to go sign up, log in separately, or manually create an API key before setup. First check for existing TraceKit auth. If `~/.tracekitconfig` does not contain the production profile or `TRACEKIT_API_KEY` is missing, apply the `tracekit-auth` skill first. Use `./scripts/run-tracekit-auth.sh status` to check, then guide the user through the TraceKit email verification flow with `register` and `verify`. That flow signs the user into an existing account for that email or creates the account automatically, then saves the returned credentials for the rest of the setup.
+
 This is the entry point skill for TraceKit APM. It detects the user's technology stack, asks which features they want, and routes to the appropriate SDK and feature skills for setup.
 
 ## When To Use
@@ -16,6 +20,8 @@ Use this skill when the user asks to:
 - Choose the right TraceKit SDK for their project
 
 ## Step 1: Detection
+
+Before stack detection, ensure TraceKit auth exists for production setup flows. If the user is not connected yet, apply the `tracekit-auth` skill first. Do not redirect them to a separate signup or API-key-generation flow. The auth skill should handle the email verification flow, connect the existing account for that email or create it automatically, save the production credentials, and then continue directly with SDK setup.
 
 Scan the project to determine the technology stack:
 

@@ -1,4 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/mcp.json",
-  "mcpServers": {}
+  "mcpServers": {
+    "tracekit": {
+      "type": "stdio",
+      "command": "./scripts/run-tracekit-mcp.sh"
+    }
+  }
 }

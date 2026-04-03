@@ -16,6 +16,8 @@ curl -sSL https://raw.githubusercontent.com/tracekit-dev/tracekit-for-ai/main/sk
 
 All skills follow the **detect -> configure -> verify** pattern: detect the user's stack, apply the right configuration, and verify data appears in the TraceKit dashboard.
 
+Authentication should be bootstrapped through `skills/tracekit-auth/` before asking users to manually create API keys.
+
 ---
 
 ## Backend SDK Setup
@@ -46,6 +48,7 @@ All skills follow the **detect -> configure -> verify** pattern: detect the user
 
 | Skill | Directory | Description | Status |
 |-------|-----------|-------------|--------|
+| TraceKit Auth | `skills/tracekit-auth/` | Connect a user to TraceKit with email verification and save the production profile for future skills and MCP use | Available |
 | TraceKit Code Monitoring | `skills/tracekit-code-monitoring/` | Enable live breakpoints and snapshots for production debugging | Available |
 | TraceKit Session Replay | `skills/tracekit-session-replay/` | Record and replay user sessions with linked traces | Available |
 | TraceKit Source Maps | `skills/tracekit-source-maps/` | Upload source maps for readable stack traces in production | Available |

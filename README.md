@@ -46,6 +46,87 @@ Add `tracekit-dev/tracekit-for-ai` as a plugin source in Cursor settings.
 
 Clone this repo and point Codex at [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json), then install the `TraceKit` plugin from that local marketplace.
 
+## Authentication
+
+Users should not be sent off to sign up or manually create an API key first if the assistant can walk them through the TraceKit email verification flow.
+
+- Auth skill: [`skills/tracekit-auth/SKILL.md`](./skills/tracekit-auth/SKILL.md)
+- Auth launcher: [`scripts/run-tracekit-auth.sh`](./scripts/run-tracekit-auth.sh)
+- Unified agent binary entrypoint: [`scripts/run-tracekit-agent.sh`](./scripts/run-tracekit-agent.sh)
+
+The helper supports:
+
+- `./scripts/run-tracekit-auth.sh status`
+- `./scripts/run-tracekit-auth.sh register --email <email>`
+- `./scripts/run-tracekit-auth.sh verify --session-id <session_id> --code <code>`
+
+Successful verification signs the user into the existing account for that email or creates it automatically, then writes the production profile to `~/.tracekitconfig` so both the MCP server and future TraceKit skills can reuse the same credentials.
+
+## MCP Server
+
+This repo now includes a local TraceKit MCP server for agents that support MCP tool servers.
+
+- MCP config: [`.mcp.json`](./.mcp.json)
+- Runner script: [`scripts/run-tracekit-mcp.sh`](./scripts/run-tracekit-mcp.sh)
+- Unified agent source: [`agent/tracekit-agent`](./agent/tracekit-agent)
+- Release binaries directory: [`bin/`](./bin)
+
+The server currently exposes read-focused tools:
+
+- `tracekit_status`
+- `tracekit_dashboard`
+- `tracekit_services`
+- `tracekit_service_detail`
+- `tracekit_traces`
+- `tracekit_alert_rules`
+- `tracekit_triage_inbox`
+
+### MCP Auth
+
+The MCP server uses the same TraceKit credentials model as the CLI:
+
+1. Preferred: the assistant uses `tracekit-auth` or `./scripts/run-tracekit-auth.sh` to write `~/.tracekitconfig`
+2. Also supported: `tracekit login` and stored credentials in `~/.tracekitconfig`
+3. Optional override: `TRACEKIT_API_KEY`, `TRACEKIT_USER_ID`, and `TRACEKIT_ENDPOINT`
+
+### MCP Requirements
+
+- For released binaries in `bin/`: no language runtime required
+- For development fallback when no local binary exists: Go 1.22 or newer
+- valid TraceKit credentials
+
+### How To Test
+
+1. Confirm you can authenticate with the CLI:
+
+```bash
+tracekit login
+```
+
+2. Smoke test the MCP server startup:
+
+```bash
+./scripts/run-tracekit-mcp.sh
+```
+
+It will wait for MCP stdio messages. Press `Ctrl+C` to stop it.
+
+3. Send a manual MCP initialize + tool call:
+
+```bash
+cd tracekit-for-ai
+
+init='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"manual-test","version":"0.0.0"}}}'
+call='{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"tracekit_status","arguments":{}}}'
+
+{
+  printf 'Content-Length: %s\r\n\r\n%s' ${#init} "$init"
+  printf 'Content-Length: %s\r\n\r\n%s' ${#call} "$call"
+} | ./scripts/run-tracekit-mcp.sh
+```
+
+4. Test with Codex by loading [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json), installing `TraceKit`, and checking that the MCP server is available through the plugin.
+
 ## Usage
 
 After installing, ask your AI assistant:

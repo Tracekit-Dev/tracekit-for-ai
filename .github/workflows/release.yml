@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Agent Binaries
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: [amd64, arm64]
+        exclude:
+          - goos: windows
+            goarch: arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Build binary
+        working-directory: agent/tracekit-agent
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          mkdir -p ../../bin
+          BINARY_NAME="tracekit-agent"
+          OUTPUT_NAME="tracekit-agent-${{ matrix.goos }}-${{ matrix.goarch }}"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            BINARY_NAME="tracekit-agent.exe"
+            OUTPUT_NAME="${OUTPUT_NAME}.exe"
+          fi
+
+          go build -ldflags="-s -w -X main.version=${{ steps.version.outputs.VERSION }}" -o "../../bin/${OUTPUT_NAME}" .
+          sha256sum "../../bin/${OUTPUT_NAME}" > "../../bin/${OUTPUT_NAME}.sha256"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tracekit-agent-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: |
+            bin/tracekit-agent-*
+            scripts/run-tracekit-agent.sh
+            scripts/run-tracekit-mcp.sh
+            scripts/run-tracekit-auth.sh
+            .mcp.json
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            bin/tracekit-agent-*
+            scripts/run-tracekit-agent.sh
+            scripts/run-tracekit-mcp.sh
+            scripts/run-tracekit-auth.sh
+            .mcp.json
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
