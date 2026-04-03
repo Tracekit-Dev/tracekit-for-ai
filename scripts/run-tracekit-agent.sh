@@ -53,7 +53,35 @@ download_binary() {
   chmod +x "$BINARY"
 }
 
+needs_update() {
+  if [ ! -x "$BINARY" ]; then
+    return 0
+  fi
+  command -v curl >/dev/null 2>&1 || return 1
+  CHECK_FILE="$REPO_DIR/bin/.last-update-check"
+  if [ -f "$CHECK_FILE" ]; then
+    LAST_CHECK=$(cat "$CHECK_FILE" 2>/dev/null || echo 0)
+    NOW=$(date +%s)
+    ELAPSED=$((NOW - LAST_CHECK))
+    if [ "$ELAPSED" -lt 3600 ]; then
+      return 1
+    fi
+  fi
+  LOCAL_VERSION=$("$BINARY" version 2>/dev/null || echo "unknown")
+  LATEST_VERSION=$(curl -fsSL "https://api.github.com/repos/Tracekit-Dev/tracekit-for-ai/releases/latest" 2>/dev/null | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -1)
+  mkdir -p "$REPO_DIR/bin"
+  date +%s > "$CHECK_FILE"
+  if [ -z "$LATEST_VERSION" ] || [ "$LATEST_VERSION" = "$LOCAL_VERSION" ]; then
+    return 1
+  fi
+  echo "Update available: $LOCAL_VERSION -> $LATEST_VERSION" >&2
+  return 0
+}
+
 if [ -x "$BINARY" ]; then
+  if needs_update; then
+    download_binary
+  fi
   exec "$BINARY" "$@"
 fi
 
