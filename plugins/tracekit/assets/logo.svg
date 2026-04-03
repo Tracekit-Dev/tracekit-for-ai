@@ -1,5 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="TraceKit logo">
-  <rect width="128" height="128" rx="28" fill="#0f172a"/>
-  <path d="M28 38h72v12H70v40H58V50H28V38z" fill="#22c55e"/>
-  <path d="M28 96l18-30h14L42 96H28zm40-15c0-11 9-20 20-20h12v12H88a8 8 0 100 16h12v12H88c-11 0-20-9-20-20z" fill="#38bdf8"/>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="tk-bg" cx="50%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </radialGradient>
+    <linearGradient id="tk-line" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="50%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background with rounded corners -->
+  <rect x="0" y="0" width="512" height="512" rx="120" fill="url(#tk-bg)"/>
+
+  <!-- Trace waveform -->
+  <path d="M80 288 L130 224 L180 296 L230 176 L280 336 L330 232 L380 280"
+        fill="none"
+        stroke="url(#tk-line)"
+        stroke-width="18"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <!-- Animated end dot with pulsing effect -->
+  <circle cx="380" cy="280" r="14" fill="#EC4899">
+    <animate attributeName="r" values="14;18;14" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0.7;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Subtle glow effect on dot -->
+  <circle cx="380" cy="280" r="24" fill="#EC4899" opacity="0.3">
+    <animate attributeName="r" values="24;32;24" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/>
+  </circle>
 </svg>
