@@ -46,6 +46,8 @@ Add `tracekit-dev/tracekit-for-ai` as a plugin source in Cursor settings.
 
 Clone this repo and point Codex at [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json), then install the `TraceKit` plugin from that local marketplace.
 
+On first use, the bundled launcher scripts automatically download the correct `tracekit-agent` binary from the latest GitHub release into [`bin/`](./bin), so end users do not need Go or Python installed.
+
 ## Authentication
 
 Users should not be sent off to sign up or manually create an API key first if the assistant can walk them through the TraceKit email verification flow.
@@ -59,6 +61,8 @@ The helper supports:
 - `./scripts/run-tracekit-auth.sh status`
 - `./scripts/run-tracekit-auth.sh register --email <email>`
 - `./scripts/run-tracekit-auth.sh verify --session-id <session_id> --code <code>`
+
+If the local agent binary is missing, the launcher downloads the correct release binary automatically before running the auth flow.
 
 Successful verification signs the user into the existing account for that email or creates it automatically, then writes the production profile to `~/.tracekitconfig` so both the MCP server and future TraceKit skills can reuse the same credentials.
 
@@ -92,15 +96,22 @@ The MCP server uses the same TraceKit credentials model as the CLI:
 ### MCP Requirements
 
 - For released binaries in `bin/`: no language runtime required
+- If no local binary is present, the launcher self-installs the correct one from the latest GitHub release
 - For development fallback when no local binary exists: Go 1.22 or newer
 - valid TraceKit credentials
 
 ### How To Test
 
-1. Confirm you can authenticate with the CLI:
+1. Start the auth flow:
 
 ```bash
-tracekit login
+./scripts/run-tracekit-auth.sh register --email you@example.com
+```
+
+Then verify with the emailed code:
+
+```bash
+./scripts/run-tracekit-auth.sh verify --session-id <session_id> --code <code>
 ```
 
 2. Smoke test the MCP server startup:
