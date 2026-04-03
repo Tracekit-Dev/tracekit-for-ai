@@ -11,6 +11,19 @@ Structured skill files that AI coding assistants read to guide you through setti
 
 Supports Claude Code, Cursor, and 38+ other AI tools via `npx skills add`. Skills follow a detect, configure, verify pattern -- your assistant identifies your stack, sets up TraceKit, and confirms data is flowing to your dashboard.
 
+## Compatibility
+
+This repo is the shared source for TraceKit AI integrations. The `skills/` content is reused across assistants, but each tool reads a different plugin or marketplace format.
+
+| Tool | Install method | Uses shared `skills/` | Metadata source |
+|------|----------------|-----------------------|-----------------|
+| npx-compatible tools | `npx skills add tracekit-dev/tracekit-for-ai` | Yes | repo skills layout |
+| Claude Code | `/install-plugin https://github.com/tracekit-dev/tracekit-for-ai` | Yes | `.claude-plugin/plugin.json` |
+| Cursor | Add `tracekit-dev/tracekit-for-ai` as a plugin source | Yes | `.cursor-plugin/plugin.json` |
+| Codex | Load [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json) and install `TraceKit` | Yes | `.agents/plugins/marketplace.json` and `plugins/tracekit/.codex-plugin/plugin.json` |
+
+Short version: one TraceKit repo, one shared skill set, multiple assistant-specific install paths.
+
 ## Quick Start
 
 ### npx (works with 38+ AI tools)
@@ -28,6 +41,10 @@ npx skills add tracekit-dev/tracekit-for-ai
 ### Cursor
 
 Add `tracekit-dev/tracekit-for-ai` as a plugin source in Cursor settings.
+
+### Codex
+
+Clone this repo and point Codex at [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json), then install the `TraceKit` plugin from that local marketplace.
 
 ## Usage
 

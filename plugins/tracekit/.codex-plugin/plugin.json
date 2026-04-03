@@ -1,0 +1,47 @@
+{
+  "name": "tracekit",
+  "version": "1.0.0",
+  "description": "Codex plugin for setting up TraceKit APM, tracing, error monitoring, and debugging workflows.",
+  "author": {
+    "name": "TraceKit",
+    "email": "support@tracekit.dev",
+    "url": "https://tracekit.dev"
+  },
+  "homepage": "https://tracekit.dev",
+  "repository": "https://github.com/tracekit-dev/tracekit-for-ai",
+  "license": "Apache-2.0",
+  "keywords": [
+    "tracekit",
+    "apm",
+    "observability",
+    "tracing",
+    "monitoring",
+    "debugging",
+    "codex"
+  ],
+  "skills": "../../skills/",
+  "mcpServers": "../../.mcp.json",
+  "interface": {
+    "displayName": "TraceKit",
+    "shortDescription": "Install TraceKit across backend and frontend stacks from Codex.",
+    "longDescription": "TraceKit equips Codex with reusable setup skills for tracing, APM, error monitoring, live breakpoints, session replay, alerts, releases, and source maps across popular frameworks.",
+    "developerName": "TraceKit",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://tracekit.dev",
+    "privacyPolicyURL": "https://tracekit.dev/privacy",
+    "termsOfServiceURL": "https://tracekit.dev/terms",
+    "defaultPrompt": [
+      "Set up TraceKit tracing in this project.",
+      "Add TraceKit error monitoring to this app.",
+      "Enable TraceKit session replay and source maps."
+    ],
+    "brandColor": "#22C55E",
+    "composerIcon": "./assets/logo.svg",
+    "logo": "./assets/logo.svg",
+    "screenshots": []
+  }
+}

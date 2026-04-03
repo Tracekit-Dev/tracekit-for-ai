@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="TraceKit logo">
+  <rect width="128" height="128" rx="28" fill="#0f172a"/>
+  <path d="M28 38h72v12H70v40H58V50H28V38z" fill="#22c55e"/>
+  <path d="M28 96l18-30h14L42 96H28zm40-15c0-11 9-20 20-20h12v12H88a8 8 0 100 16h12v12H88c-11 0-20-9-20-20z" fill="#38bdf8"/>
+</svg>
