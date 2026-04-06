@@ -21,21 +21,20 @@ Use this skill when the user asks to:
 
 **Framework users:** If the user is using React, Vue, Angular, Next.js, or Nuxt, use the corresponding framework wrapper skill instead (`tracekit-react-sdk`, `tracekit-vue-sdk`, `tracekit-angular-sdk`, `tracekit-nextjs-sdk`, `tracekit-nuxt-sdk`). Framework wrappers provide tighter integration with error boundaries, router breadcrumbs, and SSR support.
 
-**Svelte/Solid users:** These frameworks do not have dedicated wrapper skills. Use this browser SDK skill directly — it works in any JavaScript environment.
+**Svelte/Solid users:** These frameworks do not have dedicated wrapper skills. Use this browser SDK skill directly - it works in any JavaScript environment.
 
 ## Non-Negotiable Rules
 
 1. **Never hardcode API keys** in code. Always use environment variables or build-time injection (e.g., `import.meta.env.VITE_TRACEKIT_API_KEY`).
 2. **Always include a verification step** confirming errors and traces appear in `https://app.tracekit.dev/traces`.
-3. **Always enable code monitoring** (`enableCodeMonitoring: true`) — it is TraceKit's differentiator for live debugging.
-4. **Always init TraceKit before any other application code** — the SDK must be the first thing that runs to capture all errors.
+3. **Always init TraceKit before any other application code** - the SDK must be the first thing that runs to capture all errors.
 
 ## Detection
 
 Before applying this skill, detect the project type:
 
-1. **Check for `package.json`** — confirms this is a JavaScript/TypeScript project.
-2. **Confirm NO framework detected** — scan `package.json` dependencies for:
+1. **Check for `package.json`** - confirms this is a JavaScript/TypeScript project.
+2. **Confirm NO framework detected** - scan `package.json` dependencies for:
    - `react-dom` => use `tracekit-react-sdk` skill instead
    - `vue` => use `tracekit-vue-sdk` skill instead
    - `@angular/core` => use `tracekit-angular-sdk` skill instead
@@ -58,7 +57,7 @@ Add to your `.env` file:
 TRACEKIT_API_KEY=ctxio_your_api_key_here
 ```
 
-**Build tool injection** — how the env var reaches your code depends on your bundler:
+**Build tool injection** - how the env var reaches your code depends on your bundler:
 
 | Build Tool | Env Var Name | Access Pattern |
 |------------|-------------|----------------|
@@ -86,7 +85,7 @@ Or with Yarn:
 yarn add @tracekit/browser
 ```
 
-This installs the TraceKit browser SDK with automatic error capture, breadcrumb tracking, distributed tracing support, and code monitoring.
+This installs the TraceKit browser SDK with automatic error capture, breadcrumb tracking, and distributed tracing support.
 
 ## Step 3: Initialize TraceKit
 
@@ -95,32 +94,32 @@ Create a `tracekit.ts` (or `tracekit.js`) file and import it as the **first modu
 ### TypeScript (Vite)
 
 ```typescript
-// src/tracekit.ts — import this FIRST in main.ts
+// src/tracekit.ts - import this FIRST in main.ts
 import { init } from '@tracekit/browser';
 
 init({
   apiKey: import.meta.env.VITE_TRACEKIT_API_KEY,
   serviceName: 'my-frontend-app',
-  endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
+  endpoint: 'https://app.tracekit.dev',
   release: import.meta.env.VITE_APP_VERSION || '0.0.0',
   environment: import.meta.env.MODE,
+  sampleRate: 1.0,
 });
 ```
 
 ### JavaScript (Webpack)
 
 ```javascript
-// src/tracekit.js — import this FIRST in index.js
+// src/tracekit.js - import this FIRST in index.js
 const { init } = require('@tracekit/browser');
 
 init({
   apiKey: process.env.TRACEKIT_API_KEY,
   serviceName: 'my-frontend-app',
-  endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
+  endpoint: 'https://app.tracekit.dev',
   release: process.env.APP_VERSION || '0.0.0',
   environment: process.env.NODE_ENV,
+  sampleRate: 1.0,
 });
 ```
 
@@ -183,7 +182,6 @@ setTag('tenant', 'acme-corp');
 setExtra('cart_items', 3);
 
 addBreadcrumb({
-  type: 'user',
   category: 'cart',
   message: 'Added item to cart',
   level: 'info',
@@ -191,32 +189,7 @@ addBreadcrumb({
 });
 ```
 
-## Step 5: Custom Performance Spans
-
-Measure specific operations like API calls, rendering, or user interactions:
-
-```typescript
-import { getClient } from '@tracekit/browser';
-
-const client = getClient();
-
-// Measure an async operation
-const span = client.startSpan('load-dashboard', null, {
-  'component': 'Dashboard',
-  'user.id': currentUser.id,
-});
-
-try {
-  const data = await fetchDashboardData();
-  renderDashboard(data);
-  span.end();
-} catch (err) {
-  client.captureException(err as Error);
-  span.end();
-}
-```
-
-## Step 6: Distributed Tracing
+## Step 5: Distributed Tracing
 
 Connect frontend requests to backend traces by configuring `tracePropagationTargets`. The SDK automatically injects `traceparent` headers into fetch and XHR requests matching these patterns.
 
@@ -226,8 +199,8 @@ import { init } from '@tracekit/browser';
 init({
   apiKey: import.meta.env.VITE_TRACEKIT_API_KEY,
   serviceName: 'my-frontend-app',
-  endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
+  endpoint: 'https://app.tracekit.dev',
+  sampleRate: 1.0,
   tracePropagationTargets: [
     'https://api.myapp.com',           // Exact match
     'https://auth.myapp.com',          // Another backend
@@ -251,7 +224,7 @@ app.use(cors({
 }));
 ```
 
-## Step 7: Session Replay (Optional)
+## Step 6: Session Replay (Optional)
 
 Record user sessions for visual debugging. Replay shows exactly what the user saw when an error occurred.
 
@@ -267,24 +240,24 @@ const replay = replayIntegration({
 init({
   apiKey: import.meta.env.VITE_TRACEKIT_API_KEY,
   serviceName: 'my-frontend-app',
-  endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
+  endpoint: 'https://app.tracekit.dev',
+  sampleRate: 1.0,
   addons: [replay],
 });
 ```
 
-**Privacy settings** — mask sensitive content by default:
+**Privacy settings** - control what gets captured:
 
 ```typescript
 const replay = replayIntegration({
   sessionSampleRate: 0.1,
   errorSampleRate: 1.0,
-  maskAllText: true,       // Replace text with asterisks
-  blockAllMedia: true,     // Block images and videos
+  blockMedia: true,          // Block images, videos, canvas, svg, iframe (default: true)
+  unmask: ['.public-text'],  // CSS selectors to unmask (everything else is masked by rrweb default)
 });
 ```
 
-## Step 8: Source Maps (Optional)
+## Step 7: Source Maps (Optional)
 
 Upload source maps so stack traces show original file names and line numbers instead of minified code.
 
@@ -300,7 +273,7 @@ After building your application, upload source maps:
 tracekit sourcemaps upload --release=1.0.0 ./dist
 ```
 
-**Build integration** — add to your build script in `package.json`:
+**Build integration** - add to your build script in `package.json`:
 
 ```json
 {
@@ -313,12 +286,12 @@ tracekit sourcemaps upload --release=1.0.0 ./dist
 
 Ensure the `release` value matches the `release` option in your `init()` config. The TraceKit backend uses this to map errors to the correct source maps.
 
-## Step 9: Verification
+## Step 8: Verification
 
 After integrating, verify errors and traces are flowing:
 
 1. **Start your application** with the API key env var set.
-2. **Trigger a test error** — add this temporarily to your code:
+2. **Trigger a test error** - add this temporarily to your code:
    ```typescript
    import { captureException } from '@tracekit/browser';
    setTimeout(() => {
@@ -353,8 +326,7 @@ import { replayIntegration } from '@tracekit/replay';
 const replay = replayIntegration({
   sessionSampleRate: 0.1,
   errorSampleRate: 1.0,
-  maskAllText: true,
-  blockAllMedia: true,
+  blockMedia: true,
 });
 
 // --- SDK Init (must run before any app code) ---
@@ -363,8 +335,8 @@ init({
   serviceName: 'my-frontend-app',
   release: import.meta.env.VITE_APP_VERSION || '0.0.0',
   environment: import.meta.env.MODE,
-  endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
+  endpoint: 'https://app.tracekit.dev',
+  sampleRate: 1.0,
   tracePropagationTargets: [
     'https://api.myapp.com',
     /^https:\/\/.*\.myapp\.com/,
@@ -388,7 +360,7 @@ Usage in application code:
 // src/main.ts
 import './tracekit'; // MUST be first import
 
-import { setUser, captureException, addBreadcrumb } from './tracekit';
+import { setUser, captureException, addBreadcrumb, getClient } from './tracekit';
 
 // After login
 function onLogin(user: { id: string; email: string; name: string }) {
@@ -398,7 +370,6 @@ function onLogin(user: { id: string; email: string; name: string }) {
 // In business logic
 async function loadDashboard() {
   addBreadcrumb({
-    type: 'navigation',
     category: 'route',
     message: 'Navigated to dashboard',
     level: 'info',
@@ -411,6 +382,13 @@ async function loadDashboard() {
     captureException(err as Error, { component: 'Dashboard' });
     showErrorFallback();
   }
+}
+
+// Advanced: access the client directly (may be null if not initialized)
+const client = getClient();
+if (client) {
+  const config = client.getConfig();
+  console.log('TraceKit service:', config.serviceName);
 }
 ```
 
@@ -438,17 +416,16 @@ async function loadDashboard() {
 
 ### Session replay not recording
 
-- **Check sampling rate:** `sessionSampleRate: 0.1` means only 10% of sessions are recorded. Set to `1.0` during testing.
+- **Check `sessionSampleRate`:** A value of `0.1` means only 10% of sessions are recorded. Set to `1.0` during testing.
 - **Check `@tracekit/replay` is installed:** Session replay requires a separate package.
-- **Check privacy settings:** `maskAllText: true` and `blockAllMedia: true` are recommended defaults. Adjust if replay content appears blank.
+- **Check `blockMedia`:** When `true` (the default), images and videos are replaced with placeholders. Set `blockMedia: false` and `inlineImages: true` if you need to capture media content.
 
 ## Next Steps
 
 Once your browser app is traced, consider:
-- **Code Monitoring** — Set live breakpoints and capture snapshots in production without redeploying (already enabled via `enableCodeMonitoring: true`)
-- **Session Replay** — Visual debugging with full session recordings (see `tracekit-session-replay` skill)
-- **Source Maps** — Readable stack traces with original source code (see `tracekit-source-maps` skill)
-- **Backend Tracing** — Add `@tracekit/node-apm` or another backend SDK for end-to-end distributed traces (see `tracekit-node-sdk`, `tracekit-go-sdk`, and other backend skills)
+- **Session Replay** - Visual debugging with full session recordings (see `tracekit-session-replay` skill)
+- **Source Maps** - Readable stack traces with original source code (see `tracekit-source-maps` skill)
+- **Backend Tracing** - Add `@tracekit/node-apm` or another backend SDK for end-to-end distributed traces (see `tracekit-node-sdk`, `tracekit-go-sdk`, and other backend skills)
 
 ## References
 

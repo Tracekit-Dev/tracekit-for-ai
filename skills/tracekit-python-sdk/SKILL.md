@@ -21,15 +21,15 @@ Use this skill when the user asks to:
 ## Non-Negotiable Rules
 
 1. **Never hardcode API keys** in code. Always use `os.getenv("TRACEKIT_API_KEY")` or `os.environ["TRACEKIT_API_KEY"]`.
-2. **Always call `tracekit.init()` before creating the app** — initialization must happen before framework setup so auto-instrumentation patches are applied.
+2. **Always call `tracekit.init()` before creating the app**  - initialization must happen before framework setup so auto-instrumentation patches are applied.
 3. **Always include a verification step** confirming traces appear in `https://app.tracekit.dev/traces`.
-4. **Always enable code monitoring** (`enable_code_monitoring=True`) — it is TraceKit's differentiator.
+4. **Always enable code monitoring** (`enable_code_monitoring=True`)  - it is TraceKit's differentiator.
 
 ## Detection
 
 Before applying this skill, detect the project type:
 
-1. **Check for Python project files** — `requirements.txt`, `pyproject.toml`, or `Pipfile` confirms this is a Python project.
+1. **Check for Python project files**  - `requirements.txt`, `pyproject.toml`, or `Pipfile` confirms this is a Python project.
 2. **Detect framework** by scanning dependencies or imports:
    - `django` in dependencies/imports => Django framework (use Django branch)
    - `flask` in dependencies/imports => Flask framework (use Flask branch)
@@ -46,7 +46,7 @@ Add to your `.env` file or environment:
 export TRACEKIT_API_KEY=ctxio_your_api_key_here
 ```
 
-The OTLP endpoint is hardcoded in the SDK init — no need to configure it separately.
+The OTLP endpoint is hardcoded in the SDK init  - no need to configure it separately.
 
 Where to get your API key:
 1. Log in to [TraceKit](https://app.tracekit.dev)
@@ -80,7 +80,7 @@ Add initialization at the top of your application entry point, **before** creati
 import tracekit
 import os
 
-# Initialize TraceKit — MUST be before app creation
+# Initialize TraceKit  - MUST be before app creation
 client = tracekit.init(
     api_key=os.getenv("TRACEKIT_API_KEY"),
     service_name="my-python-service",
@@ -211,7 +211,7 @@ except Exception as e:
 
 ## Step 5b: Snapshot Capture (Code Monitoring)
 
-For programmatic snapshots, **use the snapshot client directly** — do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
+For programmatic snapshots, **use the snapshot client directly**  - do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
 
 Create a thin wrapper module (e.g., `app/breakpoints.py`):
 
@@ -255,7 +255,7 @@ See the `tracekit-code-monitoring` skill for the full pattern across all languag
 After integrating, verify traces are flowing:
 
 1. **Start your application** with `TRACEKIT_API_KEY` set in the environment.
-2. **Hit your endpoints 3-5 times** — e.g., `curl http://localhost:5000/api/users/1` (Flask) or `curl http://localhost:8000/api/users/1` (FastAPI/Django).
+2. **Hit your endpoints 3-5 times**  - e.g., `curl http://localhost:5000/api/users/1` (Flask) or `curl http://localhost:8000/api/users/1` (FastAPI/Django).
 3. **Open** `https://app.tracekit.dev/traces`.
 4. **Confirm** new spans and your service name appear within 30-60 seconds.
 
@@ -266,7 +266,7 @@ If traces do not appear, see Troubleshooting below.
 ### Traces not appearing in dashboard
 
 - **Check `TRACEKIT_API_KEY`:** Ensure the env var is set in the runtime environment. Print it: `print(os.getenv("TRACEKIT_API_KEY"))`.
-- **Check outbound access:** Your service must reach `https://app.tracekit.dev/v1/traces`. Verify with: `curl -X POST https://app.tracekit.dev/v1/traces` (expect 401 — means the endpoint is reachable).
+- **Check outbound access:** Your service must reach `https://app.tracekit.dev/v1/traces`. Verify with: `curl -X POST https://app.tracekit.dev/v1/traces` (expect 401  - means the endpoint is reachable).
 - **Check init order:** `tracekit.init()` must be called **before** creating the Flask/FastAPI app or before Django processes the first request. If init happens too late, auto-instrumentation patches miss early imports.
 
 ### Init order wrong
@@ -304,9 +304,9 @@ Fix: Use a unique `service_name` per deployed service. Avoid generic names like 
 ## Next Steps
 
 Once your Python app is traced, consider:
-- **Code Monitoring** — Set live breakpoints and capture snapshots in production without redeploying (already enabled via `enable_code_monitoring=True`)
-- **Distributed Tracing** — Connect traces across multiple services for full request visibility
-- **Frontend Observability** — Add `@tracekit/browser` to your frontend for end-to-end trace correlation
+- **Code Monitoring**  - Set live breakpoints and capture snapshots in production without redeploying (already enabled via `enable_code_monitoring=True`)
+- **Distributed Tracing**  - Connect traces across multiple services for full request visibility
+- **Frontend Observability**  - Add `@tracekit/browser` to your frontend for end-to-end trace correlation
 
 ## References
 

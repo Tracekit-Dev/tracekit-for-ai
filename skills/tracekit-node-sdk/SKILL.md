@@ -22,15 +22,15 @@ Use this skill when the user asks to:
 ## Non-Negotiable Rules
 
 1. **Never hardcode API keys** in code. Always use `process.env.TRACEKIT_API_KEY`.
-2. **Always call `tracekit.init()` before registering routes** — middleware and route handlers must come after initialization.
+2. **Always call `tracekit.init()` before registering routes**  - middleware and route handlers must come after initialization.
 3. **Always include a verification step** confirming traces appear in `https://app.tracekit.dev/traces`.
-4. **Always enable code monitoring** (`enableCodeMonitoring: true`) — it is TraceKit's differentiator.
+4. **Always enable code monitoring** (`enableCodeMonitoring: true`)  - it is TraceKit's differentiator.
 
 ## Detection
 
 Before applying this skill, detect the project type:
 
-1. **Check for `package.json`** — confirms this is a Node.js project.
+1. **Check for `package.json`**  - confirms this is a Node.js project.
 2. **Detect framework** by scanning `package.json` dependencies:
    - `"express"` in dependencies => Express framework (use Express branch)
    - `"fastify"` in dependencies => Fastify framework (use Fastify branch)
@@ -48,7 +48,7 @@ Add to your `.env` file:
 TRACEKIT_API_KEY=ctxio_your_api_key_here
 ```
 
-The OTLP endpoint is hardcoded in the SDK init — no need to configure it separately.
+The OTLP endpoint is hardcoded in the SDK init  - no need to configure it separately.
 
 Where to get your API key:
 1. Log in to [TraceKit](https://app.tracekit.dev)
@@ -80,7 +80,7 @@ Add initialization to your application entry point, **before** any route or midd
 ```typescript
 import * as tracekit from '@tracekit/node-apm';
 
-// Initialize TraceKit — MUST be before routes
+// Initialize TraceKit  - MUST be before routes
 tracekit.init({
   apiKey: process.env.TRACEKIT_API_KEY!,
   serviceName: 'my-node-service',
@@ -94,7 +94,7 @@ tracekit.init({
 ```javascript
 const tracekit = require('@tracekit/node-apm');
 
-// Initialize TraceKit — MUST be before routes
+// Initialize TraceKit  - MUST be before routes
 tracekit.init({
   apiKey: process.env.TRACEKIT_API_KEY,
   serviceName: 'my-node-service',
@@ -131,7 +131,7 @@ const app = express();
 // Add TraceKit middleware (before routes!)
 app.use(tracekit.middleware());
 
-// Your routes — automatically traced
+// Your routes  - automatically traced
 app.get('/api/users', (req, res) => {
   res.json({ users: ['alice', 'bob'] });
 });
@@ -162,7 +162,7 @@ const fastify = Fastify();
 // Register TraceKit plugin (before routes!)
 fastify.register(tracekit.fastifyPlugin());
 
-// Your routes — automatically traced
+// Your routes  - automatically traced
 fastify.get('/api/users', async (request, reply) => {
   return { users: ['alice', 'bob'] };
 });
@@ -266,7 +266,7 @@ app.post('/api/orders', async (req, res) => {
 
 ## Step 5b: Snapshot Capture (Code Monitoring)
 
-For programmatic snapshots, **use the SnapshotClient directly** — do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
+For programmatic snapshots, **use the SnapshotClient directly**  - do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
 
 Create a thin wrapper module (e.g., `src/lib/breakpoints.ts`):
 
@@ -307,7 +307,7 @@ See the `tracekit-code-monitoring` skill for the full pattern across all languag
 After integrating, verify traces are flowing:
 
 1. **Start your application** with `TRACEKIT_API_KEY` set in the environment.
-2. **Hit your endpoints 3-5 times** — e.g., `curl http://localhost:3000/api/users`.
+2. **Hit your endpoints 3-5 times**  - e.g., `curl http://localhost:3000/api/users`.
 3. **Open** `https://app.tracekit.dev/traces`.
 4. **Confirm** new spans and your service name appear within 30-60 seconds.
 
@@ -318,7 +318,7 @@ If traces do not appear, see Troubleshooting below.
 ### Traces not appearing in dashboard
 
 - **Check `TRACEKIT_API_KEY`:** Ensure the env var is set in the runtime environment. Print it: `console.log(process.env.TRACEKIT_API_KEY)`.
-- **Check outbound access:** Your service must reach `https://app.tracekit.dev/v1/traces`. Verify with: `curl -X POST https://app.tracekit.dev/v1/traces` (expect 401 — means the endpoint is reachable).
+- **Check outbound access:** Your service must reach `https://app.tracekit.dev/v1/traces`. Verify with: `curl -X POST https://app.tracekit.dev/v1/traces` (expect 401  - means the endpoint is reachable).
 - **Check init order:** `tracekit.init()` must be called **before** registering routes and middleware. If init happens after routes, requests are not traced.
 
 ### Init order wrong
@@ -348,9 +348,9 @@ Fix: Use a unique `serviceName` per deployed service. Avoid generic names like `
 ## Next Steps
 
 Once your Node.js app is traced, consider:
-- **Code Monitoring** — Set live breakpoints and capture snapshots in production without redeploying (already enabled via `enableCodeMonitoring: true`)
-- **Distributed Tracing** — Connect traces across multiple services for full request visibility
-- **Frontend Observability** — Add `@tracekit/browser` to your frontend for end-to-end trace correlation
+- **Code Monitoring**  - Set live breakpoints and capture snapshots in production without redeploying (already enabled via `enableCodeMonitoring: true`)
+- **Distributed Tracing**  - Connect traces across multiple services for full request visibility
+- **Frontend Observability**  - Add `@tracekit/browser` to your frontend for end-to-end trace correlation
 
 ## References
 

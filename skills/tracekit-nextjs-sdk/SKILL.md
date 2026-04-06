@@ -25,7 +25,6 @@ If the user has a vanilla JavaScript/TypeScript project without Next.js, use the
 
 1. **Never hardcode API keys** in code. Use `NEXT_PUBLIC_TRACEKIT_API_KEY` for client-side and `TRACEKIT_API_KEY` for server-side via `.env.local`.
 2. **Always include a verification step** confirming errors appear in `https://app.tracekit.dev`.
-3. **Always enable code monitoring** (`enableCodeMonitoring: true`) -- it is TraceKit's differentiator.
 4. **Always initialize TraceKit before app bootstrap** -- use Next.js instrumentation files for both client and server init.
 
 ## Detection
@@ -88,7 +87,6 @@ export function register() {
     release: process.env.APP_VERSION,
     environment: process.env.NODE_ENV,
     apiEndpoint: 'https://app.tracekit.dev',
-    enableCodeMonitoring: true,
   });
 }
 
@@ -111,7 +109,6 @@ initClient({
   release: process.env.NEXT_PUBLIC_APP_VERSION,
   environment: process.env.NODE_ENV,
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   tracePropagationTargets: [
     process.env.NEXT_PUBLIC_API_URL || 'https://api.example.com',
   ],
@@ -282,7 +279,6 @@ Client-side distributed tracing is configured via `tracePropagationTargets` in t
 initClient({
   apiKey: process.env.NEXT_PUBLIC_TRACEKIT_API_KEY!,
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   tracePropagationTargets: [
     'https://api.example.com',
     /^\/api\//,  // Same-origin API routes
@@ -301,7 +297,6 @@ Enable session replay in the client-side init (browser only):
 initClient({
   apiKey: process.env.NEXT_PUBLIC_TRACEKIT_API_KEY!,
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   replay: {
     enabled: true,
     sampleRate: 0.1,
@@ -387,7 +382,6 @@ initClient({
   release: process.env.NEXT_PUBLIC_APP_VERSION,
   environment: process.env.NODE_ENV,
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   tracePropagationTargets: [
     process.env.NEXT_PUBLIC_API_URL || 'https://api.example.com',
   ],
@@ -410,7 +404,6 @@ export function register() {
     apiKey: process.env.TRACEKIT_API_KEY!,
     release: process.env.APP_VERSION,
     environment: process.env.NODE_ENV,
-    enableCodeMonitoring: true,
   });
 }
 

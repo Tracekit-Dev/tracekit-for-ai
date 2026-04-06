@@ -24,16 +24,16 @@ Use this skill when the user asks to:
 ## Non-Negotiable Rules
 
 1. **Never hardcode API keys** in code. Always use `os.Getenv("TRACEKIT_API_KEY")`.
-2. **Always initialize TraceKit before registering routes** — middleware and handlers must be added after `tracekit.NewSDK()`.
+2. **Always initialize TraceKit before registering routes**  - middleware and handlers must be added after `tracekit.NewSDK()`.
 3. **Always call `defer sdk.Shutdown(context.Background())`** to flush pending traces on exit.
 4. **Always include a verification step** confirming traces appear in `https://app.tracekit.dev/traces`.
-5. **Always enable code monitoring** (`EnableCodeMonitoring: true`) — it is TraceKit's differentiator.
+5. **Always enable code monitoring** (`EnableCodeMonitoring: true`)  - it is TraceKit's differentiator.
 
 ## Detection
 
 Before applying this skill, detect the project type:
 
-1. **Check for `go.mod`** — confirms this is a Go project.
+1. **Check for `go.mod`**  - confirms this is a Go project.
 2. **Detect framework** by scanning `go.mod` and import statements:
    - `github.com/gin-gonic/gin` => Gin framework (use Gin branch)
    - `github.com/labstack/echo` => Echo framework (use Echo branch)
@@ -50,7 +50,7 @@ Add to your `.env` file or environment:
 export TRACEKIT_API_KEY=ctxio_your_api_key_here
 ```
 
-The OTLP endpoint is hardcoded in the SDK init — no need to configure it separately.
+The OTLP endpoint is hardcoded in the SDK init  - no need to configure it separately.
 
 Where to get your API key:
 1. Log in to [TraceKit](https://app.tracekit.dev)
@@ -83,7 +83,7 @@ import (
 )
 
 func main() {
-    // Initialize TraceKit — MUST be before routes
+    // Initialize TraceKit  - MUST be before routes
     sdk, err := tracekit.NewSDK(&tracekit.Config{
         APIKey:               os.Getenv("TRACEKIT_API_KEY"),
         ServiceName:          "my-go-service",
@@ -118,7 +118,7 @@ func main() {
 
     r := gin.Default()
 
-    // Add TraceKit middleware — auto-traces all routes
+    // Add TraceKit middleware  - auto-traces all routes
     r.Use(sdk.GinMiddleware())
 
     r.GET("/api/users", func(c *gin.Context) {
@@ -139,7 +139,7 @@ func main() {
 
     e := echo.New()
 
-    // Add TraceKit middleware — auto-traces all routes
+    // Add TraceKit middleware  - auto-traces all routes
     e.Use(sdk.EchoMiddleware())
 
     e.GET("/api/users", func(c echo.Context) error {
@@ -197,7 +197,7 @@ defer span.End()
 
 ## Step 5b: Snapshot Capture (Code Monitoring)
 
-For programmatic snapshots, **use the SnapshotClient directly** — do not call through the SDK wrapper. The SDK uses `runtime.Caller(2)` internally to identify the call site. Adding extra layers shifts the frame count and causes snapshots to report the wrong source location.
+For programmatic snapshots, **use the SnapshotClient directly**  - do not call through the SDK wrapper. The SDK uses `runtime.Caller(2)` internally to identify the call site. Adding extra layers shifts the frame count and causes snapshots to report the wrong source location.
 
 Create a thin wrapper package (e.g., `internal/breakpoints/breakpoints.go`):
 
@@ -250,7 +250,7 @@ See the `tracekit-code-monitoring` skill for the full pattern across all languag
 After integrating, verify traces are flowing:
 
 1. **Start your application** with `TRACEKIT_API_KEY` set in the environment.
-2. **Hit your endpoints 3-5 times** — e.g., `curl http://localhost:8080/api/users`.
+2. **Hit your endpoints 3-5 times**  - e.g., `curl http://localhost:8080/api/users`.
 3. **Open** `https://app.tracekit.dev/traces`.
 4. **Confirm** new spans and your service name appear within 30-60 seconds.
 
@@ -261,7 +261,7 @@ If traces do not appear, see Troubleshooting below.
 ### Traces not appearing in dashboard
 
 - **Check `TRACEKIT_API_KEY`:** Ensure the env var is set in the runtime environment (not just in your shell). Print it: `fmt.Println(os.Getenv("TRACEKIT_API_KEY"))`.
-- **Check outbound access:** Your service must reach `https://app.tracekit.dev/v1/traces`. Verify with: `curl -X POST https://app.tracekit.dev/v1/traces` (expect 401 — means the endpoint is reachable).
+- **Check outbound access:** Your service must reach `https://app.tracekit.dev/v1/traces`. Verify with: `curl -X POST https://app.tracekit.dev/v1/traces` (expect 401  - means the endpoint is reachable).
 - **Check init order:** `tracekit.NewSDK()` must be called **before** registering routes and middleware. If init happens after routes, requests are not traced.
 
 ### Init order wrong
@@ -338,9 +338,9 @@ After adding the transport, make an LLM API call and verify the span appears in 
 ## Next Steps
 
 Once your Go service is traced, consider:
-- **Code Monitoring** — Set live breakpoints and capture snapshots in production without redeploying (already enabled via `EnableCodeMonitoring: true`)
-- **Distributed Tracing** — Connect traces across multiple services for full request visibility
-- **Frontend Observability** — Add `@tracekit/browser` to your frontend for end-to-end trace correlation
+- **Code Monitoring**  - Set live breakpoints and capture snapshots in production without redeploying (already enabled via `EnableCodeMonitoring: true`)
+- **Distributed Tracing**  - Connect traces across multiple services for full request visibility
+- **Frontend Observability**  - Add `@tracekit/browser` to your frontend for end-to-end trace correlation
 
 ## References
 

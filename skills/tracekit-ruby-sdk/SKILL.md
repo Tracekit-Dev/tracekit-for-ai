@@ -21,16 +21,16 @@ Use this skill when the user asks to:
 ## Non-Negotiable Rules
 
 1. **Never hardcode API keys** in code. Always use `ENV["TRACEKIT_API_KEY"]`.
-2. **For Rails:** Rely on the Railtie for auto-initialization — just set environment variables. Do **not** call `Tracekit.configure` manually in a Rails app (conflicts with Railtie).
+2. **For Rails:** Rely on the Railtie for auto-initialization  - just set environment variables. Do **not** call `Tracekit.configure` manually in a Rails app (conflicts with Railtie).
 3. **For Sinatra/Rack:** Call `Tracekit.configure` before defining routes and add `use Tracekit::Middleware`.
 4. **Always include a verification step** confirming traces appear in `https://app.tracekit.dev/traces`.
-5. **Always enable code monitoring** (`enable_code_monitoring: true`) — it is TraceKit's differentiator.
+5. **Always enable code monitoring** (`enable_code_monitoring: true`)  - it is TraceKit's differentiator.
 
 ## Detection
 
 Before applying this skill, detect the project type:
 
-1. **Check for `Gemfile`** — confirms this is a Ruby project.
+1. **Check for `Gemfile`**  - confirms this is a Ruby project.
 2. **Detect framework** by scanning `Gemfile` for gems:
    - `gem 'rails'` or `gem "rails"` => Rails framework (use Rails branch)
    - `gem 'sinatra'` or `gem "sinatra"` => Sinatra framework (use Sinatra branch)
@@ -233,7 +233,7 @@ end
 
 ## Step 5b: Snapshot Capture (Code Monitoring)
 
-For programmatic snapshots, **use the snapshot client directly** — do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
+For programmatic snapshots, **use the snapshot client directly**  - do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
 
 Create a thin wrapper module (e.g., `lib/breakpoints.rb`):
 
@@ -273,7 +273,7 @@ After integrating, verify traces are flowing:
 1. **Start your application** with `TRACEKIT_API_KEY` set in the environment.
    - Rails: `TRACEKIT_API_KEY=ctxio_... rails server`
    - Sinatra: `TRACEKIT_API_KEY=ctxio_... ruby app.rb`
-2. **Hit your endpoints 3-5 times** — e.g., `curl http://localhost:3000/api/users`.
+2. **Hit your endpoints 3-5 times**  - e.g., `curl http://localhost:3000/api/users`.
 3. **Open** `https://app.tracekit.dev/traces`.
 4. **Confirm** new spans and your service name appear within 30-60 seconds.
 
@@ -284,7 +284,7 @@ If traces do not appear, see Troubleshooting below.
 ### Traces not appearing in dashboard
 
 - **Check `TRACEKIT_API_KEY`:** Ensure the env var is set in the runtime environment. Print it: `puts ENV["TRACEKIT_API_KEY"]`.
-- **Check outbound access:** Your service must reach `https://app.tracekit.dev/v1/traces`. Verify with: `curl -X POST https://app.tracekit.dev/v1/traces` (expect 401 — means the endpoint is reachable).
+- **Check outbound access:** Your service must reach `https://app.tracekit.dev/v1/traces`. Verify with: `curl -X POST https://app.tracekit.dev/v1/traces` (expect 401  - means the endpoint is reachable).
 - **For Rails:** Verify the Railtie loaded by checking logs for TraceKit initialization messages at startup.
 
 ### Rails: Railtie not loading
@@ -320,9 +320,9 @@ Fix: Use a unique service name per deployed service. Set `TRACEKIT_SERVICE_NAME`
 ## Next Steps
 
 Once your Ruby app is traced, consider:
-- **Code Monitoring** — Set live breakpoints and capture snapshots in production without redeploying (already enabled via `enable_code_monitoring: true`)
-- **Distributed Tracing** — Connect traces across multiple services for full request visibility
-- **Frontend Observability** — Add `@tracekit/browser` to your frontend for end-to-end trace correlation
+- **Code Monitoring**  - Set live breakpoints and capture snapshots in production without redeploying (already enabled via `enable_code_monitoring: true`)
+- **Distributed Tracing**  - Connect traces across multiple services for full request visibility
+- **Frontend Observability**  - Add `@tracekit/browser` to your frontend for end-to-end trace correlation
 
 ## LLM Instrumentation (Auto-Discovery)
 
@@ -358,10 +358,10 @@ Set `TRACEKIT_LLM_CAPTURE_CONTENT=true` to enable prompt/completion capture with
 
 ### Captured Attributes
 
-- `gen_ai.system` — Provider name (openai/anthropic)
-- `gen_ai.request.model` / `gen_ai.response.model` — Model name
-- `gen_ai.usage.input_tokens` / `gen_ai.usage.output_tokens` — Token counts
-- `gen_ai.response.finish_reasons` — Completion stop reason
+- `gen_ai.system`  - Provider name (openai/anthropic)
+- `gen_ai.request.model` / `gen_ai.response.model`  - Model name
+- `gen_ai.usage.input_tokens` / `gen_ai.usage.output_tokens`  - Token counts
+- `gen_ai.response.finish_reasons`  - Completion stop reason
 - Tool calls recorded as span events
 
 ### Verify

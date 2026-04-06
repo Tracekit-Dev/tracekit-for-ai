@@ -26,15 +26,14 @@ Use this skill when the user asks to:
 
 1. **Never hardcode API keys** in code. Always use environment variables or build-time injection (e.g., `import.meta.env.VITE_TRACEKIT_API_KEY`).
 2. **Always include a verification step** confirming errors and traces appear in `https://app.tracekit.dev/traces`.
-3. **Always enable code monitoring** (`enableCodeMonitoring: true`) — it is TraceKit's differentiator for live debugging.
-4. **Always init TraceKit before any other application code** — the provider must wrap the entire app at the root level.
+4. **Always init TraceKit before any other application code**  - the provider must wrap the entire app at the root level.
 
 ## Detection
 
 Before applying this skill, detect the project type:
 
-1. **Check for `package.json`** — confirms this is a JavaScript/TypeScript project.
-2. **Check for `react-dom`** in `dependencies` or `devDependencies` — confirms this is a React project.
+1. **Check for `package.json`**  - confirms this is a JavaScript/TypeScript project.
+2. **Check for `react-dom`** in `dependencies` or `devDependencies`  - confirms this is a React project.
 3. **Check for Next.js:** If `next` is in dependencies, use the `tracekit-nextjs-sdk` skill instead.
 4. **Detect build tool** for env var pattern:
    - CRA (`react-scripts` in dependencies) => `REACT_APP_TRACEKIT_API_KEY` via `process.env`
@@ -99,7 +98,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         apiKey: import.meta.env.VITE_TRACEKIT_API_KEY,
         serviceName: 'my-react-app',
         endpoint: 'https://app.tracekit.dev/v1/traces',
-        enableCodeMonitoring: true,
         release: import.meta.env.VITE_APP_VERSION || '0.0.0',
         environment: import.meta.env.MODE,
       }}
@@ -126,7 +124,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         apiKey: process.env.REACT_APP_TRACEKIT_API_KEY!,
         serviceName: 'my-react-app',
         endpoint: 'https://app.tracekit.dev/v1/traces',
-        enableCodeMonitoring: true,
         release: process.env.REACT_APP_VERSION || '0.0.0',
         environment: process.env.NODE_ENV,
       }}
@@ -139,7 +136,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
 **Key points:**
 - `TraceKitProvider` must be the outermost wrapper (before Router, Redux, etc.)
-- The provider calls `init()` internally — do not call `init()` separately
+- The provider calls `init()` internally  - do not call `init()` separately
 - `serviceName` should match your app's logical name (e.g., `"dashboard"`, `"checkout"`)
 
 ## Step 4: Error Boundary
@@ -176,7 +173,7 @@ function App() {
 }
 ```
 
-**Nesting error boundaries** — wrap different sections for granular recovery:
+**Nesting error boundaries**  - wrap different sections for granular recovery:
 
 ```tsx
 function App() {
@@ -270,7 +267,6 @@ Configure `tracePropagationTargets` in the provider config to attach trace heade
     apiKey: import.meta.env.VITE_TRACEKIT_API_KEY,
     serviceName: 'my-react-app',
     endpoint: 'https://app.tracekit.dev/v1/traces',
-    enableCodeMonitoring: true,
     tracePropagationTargets: [
       'https://api.myapp.com',
       'https://auth.myapp.com',
@@ -308,7 +304,6 @@ const replay = replayIntegration({
     apiKey: import.meta.env.VITE_TRACEKIT_API_KEY,
     serviceName: 'my-react-app',
     endpoint: 'https://app.tracekit.dev/v1/traces',
-    enableCodeMonitoring: true,
     addons: [replay],
   }}
 >
@@ -332,7 +327,7 @@ After building:
 tracekit sourcemaps upload --release=1.0.0 ./build
 ```
 
-**Build integration** — add to `package.json`:
+**Build integration**  - add to `package.json`:
 
 ```json
 {
@@ -350,7 +345,7 @@ Ensure the `release` value matches the `release` option in your provider config.
 After integrating, verify errors and traces are flowing:
 
 1. **Start your application** with the API key env var set.
-2. **Trigger a test error** — add this temporarily inside a component:
+2. **Trigger a test error**  - add this temporarily inside a component:
    ```tsx
    import { captureException } from '@tracekit/react';
 
@@ -373,7 +368,7 @@ function BuggyComponent() {
   return null;
 }
 
-// Wrap with TraceKitErrorBoundary and render — should show fallback UI
+// Wrap with TraceKitErrorBoundary and render  - should show fallback UI
 // and report error to dashboard
 ```
 
@@ -448,7 +443,6 @@ export default function App() {
         release: import.meta.env.VITE_APP_VERSION || '0.0.0',
         environment: import.meta.env.MODE,
         endpoint: 'https://app.tracekit.dev/v1/traces',
-        enableCodeMonitoring: true,
         tracePropagationTargets: [
           'https://api.myapp.com',
           /^https:\/\/.*\.myapp\.com/,
@@ -504,11 +498,10 @@ export default function App() {
 ## Next Steps
 
 Once your React app is traced, consider:
-- **Code Monitoring** — Set live breakpoints and capture snapshots in production without redeploying (already enabled via `enableCodeMonitoring: true`)
-- **Session Replay** — Visual debugging with full session recordings (see `tracekit-session-replay` skill)
-- **Source Maps** — Readable stack traces with original source code (see `tracekit-source-maps` skill)
-- **Backend Tracing** — Add `@tracekit/node-apm` or another backend SDK for end-to-end distributed traces (see `tracekit-node-sdk`, `tracekit-go-sdk`, and other backend skills)
-- **Browser SDK** — For advanced browser-level configuration, see the `tracekit-browser-sdk` skill
+- **Session Replay**  - Visual debugging with full session recordings (see `tracekit-session-replay` skill)
+- **Source Maps**  - Readable stack traces with original source code (see `tracekit-source-maps` skill)
+- **Backend Tracing**  - Add `@tracekit/node-apm` or another backend SDK for end-to-end distributed traces (see `tracekit-node-sdk`, `tracekit-go-sdk`, and other backend skills)
+- **Browser SDK**  - For advanced browser-level configuration, see the `tracekit-browser-sdk` skill
 
 ## References
 

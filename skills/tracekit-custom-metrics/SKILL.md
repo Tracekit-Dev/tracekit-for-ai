@@ -21,7 +21,7 @@ Use this skill when the user asks to:
 
 1. **Never hardcode API keys** in code snippets. Always use environment variables.
 2. **Follow the naming convention** `<namespace>.<subsystem>.<metric_name>_<unit>` (e.g., `app.orders.revenue_usd`, `app.users.signups_total`).
-3. **Limit tag cardinality** — avoid high-cardinality tags (like user IDs or request IDs) to prevent performance degradation.
+3. **Limit tag cardinality**  - avoid high-cardinality tags (like user IDs or request IDs) to prevent performance degradation.
 4. **Always include a verification step** confirming metrics appear in `https://app.tracekit.dev/metrics`.
 
 ## Prerequisites
@@ -29,7 +29,7 @@ Use this skill when the user asks to:
 The base TraceKit SDK must already be initialized in your application. If not, use the appropriate SDK skill first:
 - `tracekit-go-sdk`, `tracekit-node-sdk`, `tracekit-python-sdk`, `tracekit-java-sdk`, `tracekit-ruby-sdk`, `tracekit-php-sdk`, `tracekit-laravel-sdk`, `tracekit-dotnet-sdk`
 
-Metrics are automatically buffered and exported via OTLP — no additional configuration is needed beyond the base SDK setup.
+Metrics are automatically buffered and exported via OTLP  - no additional configuration is needed beyond the base SDK setup.
 
 ## Metric Types
 
@@ -56,11 +56,11 @@ Records the distribution of values. Use for measuring things like response times
 Follow this pattern: `<namespace>.<subsystem>.<metric_name>_<unit>`
 
 Examples:
-- `app.users.signups_total` — counter for user signups
-- `app.orders.revenue_usd` — counter for revenue in USD
-- `app.http.request_duration_ms` — histogram for request latency
-- `app.queue.pending_jobs` — gauge for queue depth
-- `app.cache.hit_ratio` — gauge for cache effectiveness
+- `app.users.signups_total`  - counter for user signups
+- `app.orders.revenue_usd`  - counter for revenue in USD
+- `app.http.request_duration_ms`  - histogram for request latency
+- `app.queue.pending_jobs`  - gauge for queue depth
+- `app.cache.hit_ratio`  - gauge for cache effectiveness
 
 ## Implementation by Language
 
@@ -238,7 +238,7 @@ Tags let you slice and filter metrics in the dashboard. Use them for dimensions 
 **Good tags** (low cardinality):
 - `service`, `environment`, `region`, `method`, `status_code`, `endpoint`
 
-**Bad tags** (high cardinality — avoid):
+**Bad tags** (high cardinality  - avoid):
 - `user_id`, `request_id`, `session_id`, `timestamp`, `trace_id`
 
 Example with tags:
@@ -273,14 +273,14 @@ After adding custom metrics:
 ### Unexpected metric values
 
 - **Counters only go up:** If you need a value that decreases, use a gauge instead.
-- **Histograms record distributions:** Individual values are not stored — only aggregated percentiles (p50, p90, p99).
+- **Histograms record distributions:** Individual values are not stored  - only aggregated percentiles (p50, p90, p99).
 - **Check units:** Ensure you are recording in consistent units (e.g., always milliseconds, not sometimes seconds).
 
 ## Next Steps
 
-- **Alerts** — Set up alerts on metric thresholds using the `tracekit-alerts` skill
-- **Dashboards** — Create custom dashboards combining metrics and traces at `https://app.tracekit.dev/dashboards`
-- **Distributed Tracing** — Correlate metrics with traces for full observability
+- **Alerts**  - Set up alerts on metric thresholds using the `tracekit-alerts` skill
+- **Dashboards**  - Create custom dashboards combining metrics and traces at `https://app.tracekit.dev/dashboards`
+- **Distributed Tracing**  - Correlate metrics with traces for full observability
 
 ## References
 

@@ -174,7 +174,7 @@ catch (Exception ex)
 
 ## Step 5b: Snapshot Capture (Code Monitoring)
 
-For programmatic snapshots, **use the SnapshotClient directly** — do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
+For programmatic snapshots, **use the SnapshotClient directly**  - do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
 
 Create a `Breakpoints` static helper:
 

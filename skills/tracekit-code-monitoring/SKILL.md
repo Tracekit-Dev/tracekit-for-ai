@@ -241,7 +241,7 @@ import (
 
 // snapshotClient holds the TraceKit snapshot client directly.
 // We bypass SDK.CheckAndCaptureWithContext to keep the correct
-// runtime.Caller frame count — the SDK uses runtime.Caller(2)
+// runtime.Caller frame count  - the SDK uses runtime.Caller(2)
 // internally, so the chain must be:
 //
 //    call site → Capture → SnapshotClient.CheckAndCaptureWithContext
@@ -321,7 +321,7 @@ Create a `breakpoints` module (e.g., `src/lib/breakpoints.ts`):
 import * as tracekit from '@tracekit/node-apm-apm';
 
 // Hold the snapshot client directly to preserve correct stack frame attribution.
-// The SDK uses stack inspection internally — calling through the SDK wrapper
+// The SDK uses stack inspection internally  - calling through the SDK wrapper
 // adds an extra frame that shifts the reported call site.
 let snapshotClient: tracekit.SnapshotClient | null = null;
 
@@ -375,7 +375,7 @@ Create a `breakpoints` module (e.g., `app/breakpoints.py`):
 import tracekit
 
 # Hold the snapshot client directly to preserve correct stack frame attribution.
-# The SDK uses stack inspection internally — calling through the SDK wrapper
+# The SDK uses stack inspection internally  - calling through the SDK wrapper
 # adds an extra frame that shifts the reported call site.
 _snapshot_client = None
 
@@ -470,7 +470,7 @@ import dev.tracekit.Tracekit;
 
 /**
  * Thin wrapper around SnapshotClient to preserve correct stack frame attribution.
- * The SDK uses stack inspection internally — calling through the SDK wrapper
+ * The SDK uses stack inspection internally  - calling through the SDK wrapper
  * adds an extra frame that shifts the reported call site.
  */
 public final class Breakpoints {
@@ -498,7 +498,7 @@ using TraceKit;
 
 /// <summary>
 /// Thin wrapper around SnapshotClient to preserve correct stack frame attribution.
-/// The SDK uses stack inspection internally — calling through the SDK wrapper
+/// The SDK uses stack inspection internally  - calling through the SDK wrapper
 /// adds an extra frame that shifts the reported call site.
 /// </summary>
 public static class Breakpoints

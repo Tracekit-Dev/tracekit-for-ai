@@ -38,7 +38,7 @@ Before applying this skill, detect the project type:
 
 1. **Check for any TraceKit package** in `package.json`, `go.mod`, `requirements.txt`, `composer.json`, `pom.xml`, `.csproj`, or `Gemfile`.
 2. **If no SDK detected**, redirect to the `tracekit-apm-setup` skill to install an SDK first.
-3. **Releases work with ALL SDKs** — no SDK-specific branching needed. Every SDK supports the `release` config key.
+3. **Releases work with ALL SDKs**  - no SDK-specific branching needed. Every SDK supports the `release` config key.
 
 ## Step 1: Install TraceKit CLI
 
@@ -60,7 +60,7 @@ The CLI provides commands for creating releases, uploading source maps, and mark
 
 ## Step 2: Configure Auth Token
 
-Set the `TRACEKIT_AUTH_TOKEN` environment variable. This is separate from `TRACEKIT_API_KEY` (used by SDKs) — the auth token is used by the CLI for release management.
+Set the `TRACEKIT_AUTH_TOKEN` environment variable. This is separate from `TRACEKIT_API_KEY` (used by SDKs)  - the auth token is used by the CLI for release management.
 
 ```bash
 export TRACEKIT_AUTH_TOKEN=your_auth_token_here
@@ -114,7 +114,7 @@ tracekit.init(
 )
 ```
 
-All TraceKit SDKs support a `release` config key. The value can be any string — semver versions, git SHAs, or build numbers all work.
+All TraceKit SDKs support a `release` config key. The value can be any string  - semver versions, git SHAs, or build numbers all work.
 
 ## Step 4: Create a Release
 
@@ -200,10 +200,10 @@ After setting up release tracking, verify it works end-to-end:
 
 1. **Create a release and mark a deploy** using the CLI commands above.
 2. **Navigate to** `https://app.tracekit.dev/releases`.
-3. **Find your release** in the list — it should show the version, deploy time, and environment.
-4. **Verify crash-free rate** — a percentage should appear once enough sessions are collected.
-5. **Trigger an error** in your application — confirm it appears associated with the correct release.
-6. **Check the deploy timeline** — your deployment should appear as a marker on the timeline view.
+3. **Find your release** in the list  - it should show the version, deploy time, and environment.
+4. **Verify crash-free rate**  - a percentage should appear once enough sessions are collected.
+5. **Trigger an error** in your application  - confirm it appears associated with the correct release.
+6. **Check the deploy timeline**  - your deployment should appear as a marker on the timeline view.
 
 ## Troubleshooting
 
@@ -216,7 +216,7 @@ After setting up release tracking, verify it works end-to-end:
 ### Events not linked to release
 
 - **Check `release` in SDK init** matches the version passed to `tracekit releases new` exactly. Case and whitespace matter.
-- **Check SDK is initialized** before the events are captured — if `release` is set after init, earlier events will not be tagged.
+- **Check SDK is initialized** before the events are captured  - if `release` is set after init, earlier events will not be tagged.
 
 ### Crash-free rate not calculating
 
@@ -231,9 +231,9 @@ After setting up release tracking, verify it works end-to-end:
 ## Next Steps
 
 Once release tracking is configured, consider:
-- **Alerts** — Set up alert rules to get notified on release regressions (see `tracekit-alerts` skill)
-- **Source Maps** — Upload source maps per release for readable frontend stack traces (see `tracekit-source-maps` skill)
-- **Distributed Tracing** — Connect traces across services to see the full request lifecycle (see `tracekit-distributed-tracing` skill)
+- **Alerts**  - Set up alert rules to get notified on release regressions (see `tracekit-alerts` skill)
+- **Source Maps**  - Upload source maps per release for readable frontend stack traces (see `tracekit-source-maps` skill)
+- **Distributed Tracing**  - Connect traces across services to see the full request lifecycle (see `tracekit-distributed-tracing` skill)
 
 ## References
 

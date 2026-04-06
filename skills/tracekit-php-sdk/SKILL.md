@@ -216,7 +216,7 @@ try {
 
 ## Step 6b: Snapshot Capture (Code Monitoring)
 
-For programmatic snapshots, **use the SnapshotClient directly** — do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
+For programmatic snapshots, **use the SnapshotClient directly**  - do not call through the SDK wrapper. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
 
 Create a `Breakpoints` helper (e.g., `src/Breakpoints.php`):
 
@@ -359,7 +359,7 @@ Once your PHP application is traced, consider:
 
 ## LLM Instrumentation (Auto-Discovery)
 
-TraceKit automatically instruments OpenAI and Anthropic API calls in PHP applications. No manual setup required — the SDK detects LLM libraries at init time via Guzzle middleware.
+TraceKit automatically instruments OpenAI and Anthropic API calls in PHP applications. No manual setup required  - the SDK detects LLM libraries at init time via Guzzle middleware.
 
 ### When To Use
 
@@ -392,10 +392,10 @@ Set `TRACEKIT_LLM_CAPTURE_CONTENT=true` to enable prompt/completion capture with
 
 ### Captured Attributes
 
-- `gen_ai.system` — Provider name (openai/anthropic)
-- `gen_ai.request.model` / `gen_ai.response.model` — Model name
-- `gen_ai.usage.input_tokens` / `gen_ai.usage.output_tokens` — Token counts
-- `gen_ai.response.finish_reasons` — Completion stop reason
+- `gen_ai.system`  - Provider name (openai/anthropic)
+- `gen_ai.request.model` / `gen_ai.response.model`  - Model name
+- `gen_ai.usage.input_tokens` / `gen_ai.usage.output_tokens`  - Token counts
+- `gen_ai.response.finish_reasons`  - Completion stop reason
 - Tool calls recorded as span events
 
 ### Verify

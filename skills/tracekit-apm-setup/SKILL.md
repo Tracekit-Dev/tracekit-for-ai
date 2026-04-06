@@ -44,21 +44,21 @@ Scan the project to determine the technology stack:
 
 ## Step 2: Ask Which Features to Set Up
 
-After detecting the stack, **ask the user which TraceKit features they want to enable**. Do not assume — present the options and let them choose. Users may want just error tracking, or the full suite.
+After detecting the stack, **ask the user which TraceKit features they want to enable**. Do not assume  - present the options and let them choose. Users may want just error tracking, or the full suite.
 
 Present the following feature menu:
 
 > **Which TraceKit features would you like to set up?** (you can pick multiple)
 >
-> 1. **Error Tracking** — Automatic error capture with stack traces and context *(included in base SDK setup)*
-> 2. **Distributed Tracing** — Request tracing across services with performance monitoring *(included in base SDK setup)*
-> 3. **Code Monitoring** — Live breakpoints and snapshots for production debugging without redeploying *(included in base SDK setup, enable with `enable_code_monitoring=True`)*
-> 4. **Custom Metrics** — Track business KPIs, counters, gauges, and histograms alongside traces
-> 5. **Session Replay** *(frontend only)* — Record and replay user sessions linked to traces
-> 6. **Source Maps** *(frontend only)* — Readable stack traces from minified JavaScript
-> 7. **Release Tracking** — Monitor crash-free rates, deploy health, and regressions per release
-> 8. **Alerts** — Set up notifications for errors, performance degradation, and availability
-> 9. **All of the above** — Full observability suite
+> 1. **Error Tracking**  - Automatic error capture with stack traces and context *(included in base SDK setup)*
+> 2. **Distributed Tracing**  - Request tracing across services with performance monitoring *(included in base SDK setup)*
+> 3. **Code Monitoring**  - Live breakpoints and snapshots for production debugging without redeploying *(included in base SDK setup, enable with `enable_code_monitoring=True`)*
+> 4. **Custom Metrics**  - Track business KPIs, counters, gauges, and histograms alongside traces
+> 5. **Session Replay** *(frontend only)*  - Record and replay user sessions linked to traces
+> 6. **Source Maps** *(frontend only)*  - Readable stack traces from minified JavaScript
+> 7. **Release Tracking**  - Monitor crash-free rates, deploy health, and regressions per release
+> 8. **Alerts**  - Set up notifications for errors, performance degradation, and availability
+> 9. **All of the above**  - Full observability suite
 
 **Default behavior:** If the user says "just set it up" or doesn't specify, set up options 1-3 (Error Tracking, Distributed Tracing, and Code Monitoring) via the base SDK skill. Mention the other features are available and can be added later.
 
@@ -72,35 +72,35 @@ Route to the SDK skill matching the detected stack. This sets up error tracking,
 
 #### Backend SDKs
 
-- **Go** — `tracekit-go-sdk` skill (Gin, Echo, net/http)
-- **Node.js** — `tracekit-node-sdk` skill (Express, Fastify, NestJS)
-- **Python** — `tracekit-python-sdk` skill (Django, Flask, FastAPI)
-- **PHP** — `tracekit-php-sdk` skill
-- **Laravel** — `tracekit-laravel-sdk` skill
-- **Java** — `tracekit-java-sdk` skill (Spring Boot, Micronaut)
-- **.NET** — `tracekit-dotnet-sdk` skill (ASP.NET Core)
-- **Ruby** — `tracekit-ruby-sdk` skill (Rails, Sinatra)
+- **Go**  - `tracekit-go-sdk` skill (Gin, Echo, net/http)
+- **Node.js**  - `tracekit-node-sdk` skill (Express, Fastify, NestJS)
+- **Python**  - `tracekit-python-sdk` skill (Django, Flask, FastAPI)
+- **PHP**  - `tracekit-php-sdk` skill
+- **Laravel**  - `tracekit-laravel-sdk` skill
+- **Java**  - `tracekit-java-sdk` skill (Spring Boot, Micronaut)
+- **.NET**  - `tracekit-dotnet-sdk` skill (ASP.NET Core)
+- **Ruby**  - `tracekit-ruby-sdk` skill (Rails, Sinatra)
 
 #### Frontend SDKs
 
-- **Browser (vanilla JS/TS)** — `tracekit-browser-sdk` skill
-- **React** — `tracekit-react-sdk` skill (ErrorBoundary, React Router breadcrumbs)
-- **Vue** — `tracekit-vue-sdk` skill (Vue plugin, Vue Router breadcrumbs)
-- **Angular** — `tracekit-angular-sdk` skill (NgModule/standalone, DI ErrorHandler)
-- **Next.js** — `tracekit-nextjs-sdk` skill (multi-runtime, App Router/Pages Router)
-- **Nuxt** — `tracekit-nuxt-sdk` skill (Nuxt module, defineNuxtPlugin)
+- **Browser (vanilla JS/TS)**  - `tracekit-browser-sdk` skill
+- **React**  - `tracekit-react-sdk` skill (ErrorBoundary, React Router breadcrumbs)
+- **Vue**  - `tracekit-vue-sdk` skill (Vue plugin, Vue Router breadcrumbs)
+- **Angular**  - `tracekit-angular-sdk` skill (NgModule/standalone, DI ErrorHandler)
+- **Next.js**  - `tracekit-nextjs-sdk` skill (multi-runtime, App Router/Pages Router)
+- **Nuxt**  - `tracekit-nuxt-sdk` skill (Nuxt module, defineNuxtPlugin)
 
 ### 2. Feature Skills (apply based on user selection)
 
 After the base SDK is set up, apply additional feature skills as selected:
 
-- **Session Replay** — `tracekit-session-replay` skill *(frontend projects only)*
-- **Source Maps** — `tracekit-source-maps` skill *(frontend projects only)*
-- **Release Tracking** — `tracekit-releases` skill
-- **Alerts** — `tracekit-alerts` skill
-- **Custom Metrics** — `tracekit-custom-metrics` skill
-- **Distributed Tracing (multi-service)** — `tracekit-distributed-tracing` skill *(when connecting frontend + backend or multiple services)*
-- **Code Monitoring (advanced)** — `tracekit-code-monitoring` skill *(for programmatic snapshots beyond the base setup)*
+- **Session Replay**  - `tracekit-session-replay` skill *(frontend projects only)*
+- **Source Maps**  - `tracekit-source-maps` skill *(frontend projects only)*
+- **Release Tracking**  - `tracekit-releases` skill
+- **Alerts**  - `tracekit-alerts` skill
+- **Custom Metrics**  - `tracekit-custom-metrics` skill
+- **Distributed Tracing (multi-service)**  - `tracekit-distributed-tracing` skill *(when connecting frontend + backend or multiple services)*
+- **Code Monitoring (advanced)**  - `tracekit-code-monitoring` skill *(for programmatic snapshots beyond the base setup)*
 
 ## References
 

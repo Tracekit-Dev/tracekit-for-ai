@@ -25,7 +25,6 @@ If the user has a vanilla JavaScript/TypeScript project without Angular, use the
 
 1. **Never hardcode API keys** in code. Always use Angular environment files with `TRACEKIT_API_KEY` env var injection.
 2. **Always include a verification step** confirming errors appear in `https://app.tracekit.dev`.
-3. **Always enable code monitoring** (`enableCodeMonitoring: true`) -- it is TraceKit's differentiator.
 4. **Always initialize TraceKit before app bootstrap** -- the SDK must load before the application starts to capture all errors.
 
 ## Detection
@@ -105,7 +104,6 @@ bootstrapApplication(AppComponent, {
       release: '1.0.0',
       environment: environment.production ? 'production' : 'development',
       endpoint: 'https://app.tracekit.dev/v1/traces',
-      enableCodeMonitoring: true,
     }),
     provideRouter(routes),
     ...provideTraceKitRouter(),
@@ -149,7 +147,6 @@ const routes: Routes = [
       release: '1.0.0',
       environment: environment.production ? 'production' : 'development',
       endpoint: 'https://app.tracekit.dev/v1/traces',
-      enableCodeMonitoring: true,
     }),
   ],
   bootstrap: [AppComponent],
@@ -280,7 +277,6 @@ bootstrapApplication(AppComponent, {
     ...provideTraceKit({
       apiKey: environment.tracekitApiKey,
       endpoint: 'https://app.tracekit.dev/v1/traces',
-      enableCodeMonitoring: true,
       tracePropagationTargets: ['https://api.example.com', /^\/api\//],
     }),
     provideHttpClient(withInterceptors([traceKitInterceptor])),
@@ -316,7 +312,6 @@ Enable session replay to record and replay user sessions linked to error traces:
 ...provideTraceKit({
   apiKey: environment.tracekitApiKey,
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   replay: {
     enabled: true,
     sampleRate: 0.1,        // Record 10% of sessions
@@ -409,7 +404,6 @@ bootstrapApplication(AppComponent, {
       release: '1.0.0',
       environment: environment.production ? 'production' : 'development',
       endpoint: 'https://app.tracekit.dev/v1/traces',
-      enableCodeMonitoring: true,
       tracePropagationTargets: ['https://api.example.com', /^\/api\//],
       replay: {
         enabled: true,
@@ -454,7 +448,6 @@ const routes: Routes = [
       release: '1.0.0',
       environment: environment.production ? 'production' : 'development',
       endpoint: 'https://app.tracekit.dev/v1/traces',
-      enableCodeMonitoring: true,
       tracePropagationTargets: ['https://api.example.com', /^\/api\//],
       replay: {
         enabled: true,

@@ -26,15 +26,14 @@ Use this skill when the user asks to:
 
 1. **Never hardcode API keys** in code. Always use environment variables or build-time injection (e.g., `import.meta.env.VITE_TRACEKIT_API_KEY`).
 2. **Always include a verification step** confirming errors and traces appear in `https://app.tracekit.dev/traces`.
-3. **Always enable code monitoring** (`enableCodeMonitoring: true`) — it is TraceKit's differentiator for live debugging.
-4. **Always init TraceKit before mounting the app** — the plugin must be registered with `app.use()` before `app.mount()`.
+4. **Always init TraceKit before mounting the app**  - the plugin must be registered with `app.use()` before `app.mount()`.
 
 ## Detection
 
 Before applying this skill, detect the project type:
 
-1. **Check for `package.json`** — confirms this is a JavaScript/TypeScript project.
-2. **Check for `vue`** in `dependencies` — confirms this is a Vue project.
+1. **Check for `package.json`**  - confirms this is a JavaScript/TypeScript project.
+2. **Check for `vue`** in `dependencies`  - confirms this is a Vue project.
 3. **Check for Nuxt:** If `nuxt` is in dependencies, use the `tracekit-nuxt-sdk` skill instead.
 4. **Detect Vue version:**
    - Check `main.ts` or `main.js` for `createApp` usage => **Vue 3** (use Composition API examples)
@@ -107,7 +106,6 @@ app.use(TraceKitPlugin, {
   apiKey: import.meta.env.VITE_TRACEKIT_API_KEY,
   serviceName: 'my-vue-app',
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   release: import.meta.env.VITE_APP_VERSION || '0.0.0',
   environment: import.meta.env.MODE,
   router, // enables automatic route change breadcrumbs
@@ -141,7 +139,6 @@ Vue.use(TraceKitPlugin, {
   apiKey: process.env.VUE_APP_TRACEKIT_API_KEY,
   serviceName: 'my-vue-app',
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   release: process.env.VUE_APP_VERSION || '0.0.0',
   environment: process.env.NODE_ENV,
   router, // enables automatic route change breadcrumbs
@@ -155,8 +152,8 @@ new Vue({
 
 **Key points:**
 - `TraceKitPlugin` must be registered before `app.mount()` (Vue 3) or `new Vue()` (Vue 2)
-- The plugin calls `init()` internally — do not call `init()` separately
-- Passing `router` is optional but recommended — it enables automatic navigation breadcrumbs
+- The plugin calls `init()` internally  - do not call `init()` separately
+- Passing `router` is optional but recommended  - it enables automatic navigation breadcrumbs
 - `serviceName` should match your app's logical name
 
 ## Step 4: Error Handler
@@ -169,10 +166,10 @@ The `TraceKitPlugin` automatically hooks into Vue's error handling lifecycle. It
 - Watcher errors
 - Component event handler errors (in Vue 3)
 
-**Error handler chaining:** If you already have a custom `errorHandler`, the plugin chains with it — your handler runs first, then TraceKit captures the error. No errors are silently swallowed.
+**Error handler chaining:** If you already have a custom `errorHandler`, the plugin chains with it  - your handler runs first, then TraceKit captures the error. No errors are silently swallowed.
 
 ```typescript
-// Vue 3 — manual error handler setup (if NOT using the plugin)
+// Vue 3  - manual error handler setup (if NOT using the plugin)
 import { createApp } from 'vue';
 import { setupErrorHandler, captureException } from '@tracekit/vue';
 
@@ -182,7 +179,7 @@ app.mount('#app');
 ```
 
 ```javascript
-// Vue 2 — manual error handler setup (if NOT using the plugin)
+// Vue 2  - manual error handler setup (if NOT using the plugin)
 import Vue from 'vue';
 import { setupErrorHandler } from '@tracekit/vue';
 
@@ -249,12 +246,11 @@ When you pass a `router` instance to `TraceKitPlugin`, the plugin automatically 
 - Navigation type (push, replace, back/forward)
 
 ```typescript
-// Vue 3 — router is passed in plugin options
+// Vue 3  - router is passed in plugin options
 app.use(TraceKitPlugin, {
   apiKey: import.meta.env.VITE_TRACEKIT_API_KEY,
   serviceName: 'my-vue-app',
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   router, // <-- enables navigation breadcrumbs
 });
 ```
@@ -341,7 +337,6 @@ app.use(TraceKitPlugin, {
   apiKey: import.meta.env.VITE_TRACEKIT_API_KEY,
   serviceName: 'my-vue-app',
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   tracePropagationTargets: [
     'https://api.myapp.com',
     'https://auth.myapp.com',
@@ -376,7 +371,6 @@ app.use(TraceKitPlugin, {
   apiKey: import.meta.env.VITE_TRACEKIT_API_KEY,
   serviceName: 'my-vue-app',
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   addons: [replay],
   router,
 });
@@ -398,7 +392,7 @@ After building:
 tracekit sourcemaps upload --release=1.0.0 ./dist
 ```
 
-**Build integration** — add to `package.json`:
+**Build integration**  - add to `package.json`:
 
 ```json
 {
@@ -416,7 +410,7 @@ Ensure the `release` value matches the `release` option in your plugin config.
 After integrating, verify errors and traces are flowing:
 
 1. **Start your application** with the API key env var set.
-2. **Trigger a test error** — add this temporarily in a component:
+2. **Trigger a test error**  - add this temporarily in a component:
 
    **Vue 3:**
    ```vue
@@ -484,7 +478,6 @@ app.use(TraceKitPlugin, {
   release: import.meta.env.VITE_APP_VERSION || '0.0.0',
   environment: import.meta.env.MODE,
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   tracePropagationTargets: [
     'https://api.myapp.com',
     /^https:\/\/.*\.myapp\.com/,
@@ -562,7 +555,6 @@ Vue.use(TraceKitPlugin, {
   release: process.env.VUE_APP_VERSION || '0.0.0',
   environment: process.env.NODE_ENV,
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   tracePropagationTargets: [
     'https://api.myapp.com',
   ],
@@ -614,11 +606,10 @@ new Vue({
 ## Next Steps
 
 Once your Vue app is traced, consider:
-- **Code Monitoring** — Set live breakpoints and capture snapshots in production without redeploying (already enabled via `enableCodeMonitoring: true`)
-- **Session Replay** — Visual debugging with full session recordings (see `tracekit-session-replay` skill)
-- **Source Maps** — Readable stack traces with original source code (see `tracekit-source-maps` skill)
-- **Backend Tracing** — Add `@tracekit/node-apm` or another backend SDK for end-to-end distributed traces (see `tracekit-node-sdk`, `tracekit-go-sdk`, and other backend skills)
-- **Browser SDK** — For advanced browser-level configuration, see the `tracekit-browser-sdk` skill
+- **Session Replay**  - Visual debugging with full session recordings (see `tracekit-session-replay` skill)
+- **Source Maps**  - Readable stack traces with original source code (see `tracekit-source-maps` skill)
+- **Backend Tracing**  - Add `@tracekit/node-apm` or another backend SDK for end-to-end distributed traces (see `tracekit-node-sdk`, `tracekit-go-sdk`, and other backend skills)
+- **Browser SDK**  - For advanced browser-level configuration, see the `tracekit-browser-sdk` skill
 
 ## References
 

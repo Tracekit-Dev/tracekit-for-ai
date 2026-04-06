@@ -25,7 +25,6 @@ If the user has a vanilla JavaScript/TypeScript project without Nuxt, use the `t
 
 1. **Never hardcode API keys** in code. Always use `runtimeConfig` with `TRACEKIT_API_KEY` env var.
 2. **Always include a verification step** confirming errors appear in `https://app.tracekit.dev`.
-3. **Always enable code monitoring** (`enableCodeMonitoring: true`) -- it is TraceKit's differentiator.
 4. **Always initialize TraceKit before app bootstrap** -- use the `.client.ts` plugin suffix to ensure browser-only init.
 
 ## Detection
@@ -125,7 +124,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     release: '1.0.0',
     environment: process.env.NODE_ENV || 'production',
     endpoint: 'https://app.tracekit.dev/v1/traces',
-    enableCodeMonitoring: true,
   });
 
   // Run the plugin initialization
@@ -259,7 +257,6 @@ TraceKit instruments `$fetch` and `useFetch` to propagate trace headers to your 
 createTraceKitPlugin({
   apiKey: config.public.tracekitApiKey,
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   tracePropagationTargets: [
     'https://api.example.com',
     /^\/api\//,  // Same-origin API routes
@@ -277,7 +274,6 @@ Enable session replay in the client plugin config (browser only):
 createTraceKitPlugin({
   apiKey: config.public.tracekitApiKey,
   endpoint: 'https://app.tracekit.dev/v1/traces',
-  enableCodeMonitoring: true,
   replay: {
     enabled: true,
     sampleRate: 0.1,        // Record 10% of sessions
@@ -384,7 +380,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     release: '1.0.0',
     environment: process.env.NODE_ENV || 'production',
     endpoint: 'https://app.tracekit.dev/v1/traces',
-    enableCodeMonitoring: true,
     tracePropagationTargets: ['/api/'],
     replay: {
       enabled: true,

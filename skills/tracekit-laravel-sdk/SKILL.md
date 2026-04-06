@@ -240,7 +240,7 @@ Tracekit::setSpanAttribute('order.total', $order->total);
 
 ## Step 6b: Snapshot Capture (Code Monitoring)
 
-For programmatic snapshots, **use the SnapshotClient directly** — do not call through the SDK wrapper or facade. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
+For programmatic snapshots, **use the SnapshotClient directly**  - do not call through the SDK wrapper or facade. The SDK uses stack inspection internally to identify the call site. Adding extra layers shifts the frame and causes snapshots to report the wrong source location.
 
 Create a `Breakpoints` helper (e.g., `app/Support/Breakpoints.php`):
 
@@ -408,7 +408,7 @@ Once your Laravel application is traced, consider:
 
 ## LLM Instrumentation (Auto-Discovery)
 
-TraceKit automatically instruments OpenAI and Anthropic API calls in Laravel applications. The service provider registers LLM event listeners — no manual setup required.
+TraceKit automatically instruments OpenAI and Anthropic API calls in Laravel applications. The service provider registers LLM event listeners  - no manual setup required.
 
 ### When To Use
 
@@ -443,7 +443,7 @@ Set `TRACEKIT_LLM_CAPTURE_CONTENT=true` to enable prompt/completion capture with
 
 ### Captured Attributes
 
-Same as PHP SDK — `gen_ai.system`, `gen_ai.request.model`, token counts, finish reasons, tool calls as span events.
+Same as PHP SDK  - `gen_ai.system`, `gen_ai.request.model`, token counts, finish reasons, tool calls as span events.
 
 ### Verify
 

@@ -25,13 +25,13 @@ Use this skill when the user asks to:
 ## Non-Negotiable Rules
 
 1. **Never hardcode API keys** in code. Always use `TRACEKIT_API_KEY` env var.
-2. **Always use W3C Trace Context** (`traceparent` header) for propagation — never proprietary headers.
+2. **Always use W3C Trace Context** (`traceparent` header) for propagation  - never proprietary headers.
 3. **Always verify traces connect across services** in the unified waterfall view before considering setup complete.
 4. **Always configure `tracePropagationTargets`** in the frontend SDK to limit which outbound requests get trace headers. This prevents leaking trace context to third-party APIs.
 
 ## Prerequisites
 
-- **At least two TraceKit SDKs must be installed** — one frontend and one or more backend, or multiple backend services.
+- **At least two TraceKit SDKs must be installed**  - one frontend and one or more backend, or multiple backend services.
 - Each service must have its own unique `serviceName` configured in SDK init.
 - If only one SDK is installed, complete the other SDK skills first:
   - Frontend: `tracekit-browser-sdk`, `tracekit-react-sdk`, `tracekit-vue-sdk`, etc.
@@ -67,12 +67,12 @@ Distributed tracing works by passing trace context between services via HTTP hea
 
 4. Each service creates **child spans** under the same trace ID, forming a tree of operations.
 
-5. TraceKit collects all spans with the same trace ID and renders them in the **unified waterfall view** — showing timing, dependencies, and service boundaries.
+5. TraceKit collects all spans with the same trace ID and renders them in the **unified waterfall view**  - showing timing, dependencies, and service boundaries.
 
 ### Why W3C Trace Context
 
-- Industry standard — works across vendors and languages
-- No vendor lock-in — switch observability backends without changing propagation
+- Industry standard  - works across vendors and languages
+- No vendor lock-in  - switch observability backends without changing propagation
 - Supported natively by all TraceKit SDKs
 - Compatible with OpenTelemetry exporters if you use them alongside TraceKit
 
@@ -148,7 +148,7 @@ e.GET("/api/users", handleUsers)
 
 **Python (Django):**
 ```python
-# settings.py — TraceKit middleware should be early in the list
+# settings.py  - TraceKit middleware should be early in the list
 MIDDLEWARE = [
     'tracekit.integrations.django.TracekitMiddleware',
     # ... other middleware
@@ -173,7 +173,7 @@ When one backend service calls another backend service, trace context must also 
 ```javascript
 const { tracekit } = require('@tracekit/node-apm');
 
-// Use tracekit.fetch — auto-injects traceparent into outbound requests
+// Use tracekit.fetch  - auto-injects traceparent into outbound requests
 const response = await tracekit.fetch('http://go-service:8080/api/data');
 const data = await response.json();
 ```
@@ -181,7 +181,7 @@ const data = await response.json();
 ### Go (Backend-to-Backend)
 
 ```go
-// Use tracekit.HTTPClient — auto-injects traceparent into outbound requests
+// Use tracekit.HTTPClient  - auto-injects traceparent into outbound requests
 resp, err := tracekit.HTTPClient.Get("http://python-service:5000/api/data")
 if err != nil {
     sdk.CaptureException(err)
@@ -195,7 +195,7 @@ defer resp.Body.Close()
 ```python
 import tracekit
 
-# Use tracekit.requests — auto-injects traceparent into outbound requests
+# Use tracekit.requests  - auto-injects traceparent into outbound requests
 response = tracekit.requests.get("http://node-service:3001/api/data")
 data = response.json()
 ```
@@ -209,19 +209,19 @@ Walk through a complete distributed trace across three services.
 ### Scenario: React Frontend -> Node.js API -> Go Microservice
 
 **Architecture:**
-- React frontend (port 3000) — user-facing UI
-- Node.js API (port 3001) — API gateway, handles auth and routing
-- Go microservice (port 8080) — user data service, queries database
+- React frontend (port 3000)  - user-facing UI
+- Node.js API (port 3001)  - API gateway, handles auth and routing
+- Go microservice (port 8080)  - user data service, queries database
 
 **Request flow:**
 
-1. **User clicks "Load Users" in React app** — the React SDK creates a browser span.
-2. **React app calls `fetch('/api/users')`** — the browser SDK injects `traceparent` into the request headers (because `localhost:3001` is in `tracePropagationTargets`).
-3. **Node.js API receives the request** — the Node SDK extracts `traceparent`, creates a child span under the same trace ID.
-4. **Node.js API calls the Go microservice** — using `tracekit.fetch('http://localhost:8080/users')`, which injects `traceparent` into the outbound request.
-5. **Go microservice receives the request** — the Go SDK extracts `traceparent`, creates a child span.
-6. **Go microservice queries the database** — the SDK creates a database span under the Go service span.
-7. **Response flows back** — each service closes its spans as responses return.
+1. **User clicks "Load Users" in React app**  - the React SDK creates a browser span.
+2. **React app calls `fetch('/api/users')`**  - the browser SDK injects `traceparent` into the request headers (because `localhost:3001` is in `tracePropagationTargets`).
+3. **Node.js API receives the request**  - the Node SDK extracts `traceparent`, creates a child span under the same trace ID.
+4. **Node.js API calls the Go microservice**  - using `tracekit.fetch('http://localhost:8080/users')`, which injects `traceparent` into the outbound request.
+5. **Go microservice receives the request**  - the Go SDK extracts `traceparent`, creates a child span.
+6. **Go microservice queries the database**  - the SDK creates a database span under the Go service span.
+7. **Response flows back**  - each service closes its spans as responses return.
 
 **All spans share the same trace ID**, forming a complete tree of the request lifecycle.
 
@@ -242,7 +242,7 @@ Go Microservice      |        ========================        |   240ms
   db.Query           |          ==================            |   180ms
 ```
 
-Each row represents a service. Child spans are indented. The timeline shows exactly where time is spent — in this example, 180ms of the total 420ms is database query time in the Go microservice.
+Each row represents a service. Child spans are indented. The timeline shows exactly where time is spent  - in this example, 180ms of the total 420ms is database query time in the Go microservice.
 
 ## Step 6: Verification
 
@@ -250,7 +250,7 @@ After configuring distributed tracing, verify end-to-end:
 
 1. **Make a request from your frontend** that hits at least 2 backend services.
 2. **Navigate to** `https://app.tracekit.dev/traces`.
-3. **Find the trace** — filter by service name or sort by recency.
+3. **Find the trace**  - filter by service name or sort by recency.
 4. **Click to open the unified waterfall view.**
 5. **Verify all services appear** as separate rows with their own spans.
 6. **Verify span timing** shows the full request lifecycle with correct parent-child relationships.
@@ -265,7 +265,7 @@ Add business context to distributed traces so you can search and filter by meani
 ### Frontend Tags
 
 ```javascript
-// Set user context — propagates to all frontend spans
+// Set user context  - propagates to all frontend spans
 TraceKit.setTag('user.id', userId);
 TraceKit.setTag('user.plan', 'enterprise');
 
@@ -277,20 +277,20 @@ transaction.setTag('cart.items', itemCount);
 ### Backend Tags
 
 ```javascript
-// Node.js — add request context
+// Node.js  - add request context
 tracekit.setTag('order.id', orderId);
 tracekit.setTag('tenant.id', tenantId);
 ```
 
 ```go
-// Go — add request context
+// Go  - add request context
 span := sdk.GetCurrentSpan(ctx)
 span.SetTag("order.id", orderID)
 span.SetTag("tenant.id", tenantID)
 ```
 
 ```python
-# Python — add request context
+# Python  - add request context
 tracekit.set_tag('order.id', order_id)
 tracekit.set_tag('tenant.id', tenant_id)
 ```
@@ -328,13 +328,13 @@ Tags are searchable in the TraceKit dashboard. Use them to find traces for speci
 
 - **`Access-Control-Allow-Headers` must include `traceparent`:** The `traceparent` header is a custom header, so CORS preflight must explicitly allow it.
 - **`Access-Control-Allow-Origin` must match:** Ensure the frontend origin is allowed by the backend CORS config.
-- **Do not use `*` for credentials:** If your frontend sends cookies or auth headers, `Access-Control-Allow-Origin` cannot be `*` — use the explicit origin.
+- **Do not use `*` for credentials:** If your frontend sends cookies or auth headers, `Access-Control-Allow-Origin` cannot be `*`  - use the explicit origin.
 
 ### Only seeing one service in the waterfall
 
 - **Check each service has a unique `serviceName`:** If two services share the same name, their spans will be grouped together and appear as one service.
 - **Check both services are sending to the same TraceKit project:** If services use different API keys for different projects, traces will not be correlated.
-- **Check the trace ID:** In the dashboard, click a trace and verify the trace ID. Then filter by that trace ID — all spans should appear regardless of service.
+- **Check the trace ID:** In the dashboard, click a trace and verify the trace ID. Then filter by that trace ID  - all spans should appear regardless of service.
 
 ### Trace waterfall shows gaps
 
@@ -355,9 +355,9 @@ Tags are searchable in the TraceKit dashboard. Use them to find traces for speci
 ## Next Steps
 
 Once distributed tracing is working across services, consider:
-- **Code Monitoring** — Set live breakpoints on traced requests to capture production state without redeploying (see `tracekit-code-monitoring` skill)
-- **Alerts** — Alert on cross-service latency or error propagation patterns (see `tracekit-alerts` skill)
-- **Releases** — Track which release introduced a latency regression visible in traces (see `tracekit-releases` skill)
+- **Code Monitoring**  - Set live breakpoints on traced requests to capture production state without redeploying (see `tracekit-code-monitoring` skill)
+- **Alerts**  - Alert on cross-service latency or error propagation patterns (see `tracekit-alerts` skill)
+- **Releases**  - Track which release introduced a latency regression visible in traces (see `tracekit-releases` skill)
 
 ## References
 

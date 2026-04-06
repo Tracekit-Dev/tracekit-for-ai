@@ -25,7 +25,7 @@ Use this skill when the user asks to:
 
 1. **Never hardcode API keys or webhook URLs** in code or config files. Use `TRACEKIT_AUTH_TOKEN` env var for API access.
 2. **Always include a test notification step** after setting up a channel to verify delivery.
-3. **Always recommend starting with the starter kit** before customizing — it provides sensible defaults for the most common scenarios.
+3. **Always recommend starting with the starter kit** before customizing  - it provides sensible defaults for the most common scenarios.
 
 ## Prerequisites
 
@@ -37,9 +37,9 @@ Use this skill when the user asks to:
 
 Before applying this skill, check the project:
 
-1. **Check for any TraceKit SDK** in the project — scan `package.json`, `go.mod`, `requirements.txt`, `composer.json`, `pom.xml`, `.csproj`, or `Gemfile`.
+1. **Check for any TraceKit SDK** in the project  - scan `package.json`, `go.mod`, `requirements.txt`, `composer.json`, `pom.xml`, `.csproj`, or `Gemfile`.
 2. **If no SDK detected**, redirect to the `tracekit-apm-setup` skill to install an SDK first. Alerts need data flowing into TraceKit before they can trigger.
-3. **Alerts are SDK-agnostic** — no SDK-specific configuration needed. Alerts operate on data already in the dashboard.
+3. **Alerts are SDK-agnostic**  - no SDK-specific configuration needed. Alerts operate on data already in the dashboard.
 
 ## Step 1: Set Up Notification Channel (Dashboard)
 
@@ -49,7 +49,7 @@ Start with Slack (the most common integration), then optionally add other channe
 
 1. Navigate to `https://app.tracekit.dev/settings/channels`.
 2. Click **Add Channel** > **Slack**.
-3. Click **Add to Slack** — this opens the Slack OAuth flow.
+3. Click **Add to Slack**  - this opens the Slack OAuth flow.
 4. Authorize the TraceKit app in your Slack workspace.
 5. Select the target channel (e.g., `#engineering-alerts`).
 6. Click **Send Test Notification** to verify the connection.
@@ -57,7 +57,7 @@ Start with Slack (the most common integration), then optionally add other channe
 
 ### Other Notification Channels
 
-TraceKit supports additional channels — set them up the same way via Settings > Channels:
+TraceKit supports additional channels  - set them up the same way via Settings > Channels:
 
 - **Email:** Enter one or more email addresses. No external app approval needed.
 - **Webhook:** Provide a URL that accepts POST requests with JSON payload. Useful for custom integrations (e.g., Zapier, internal tools).
@@ -65,7 +65,7 @@ TraceKit supports additional channels — set them up the same way via Settings 
 
 For most teams, start with Slack and add others as needed.
 
-## Step 2: Starter Kit — Recommended Alerts
+## Step 2: Starter Kit  - Recommended Alerts
 
 Create these 4 alerts to cover the most common monitoring scenarios. Each alert has been tuned for sensible defaults that avoid alert fatigue while catching real issues.
 
@@ -163,23 +163,23 @@ Beyond the starter kit, create custom alerts for your specific needs:
 1. Navigate to `https://app.tracekit.dev/alerts/rules`.
 2. Click **Create Rule**.
 3. **Select metric type:**
-   - Error count — total errors in a time window
-   - Transaction P95/P99 — latency percentiles
-   - Throughput — requests per minute
-   - Successful request rate — availability percentage
-   - Custom metric — any metric you send via the SDK
+   - Error count  - total errors in a time window
+   - Transaction P95/P99  - latency percentiles
+   - Throughput  - requests per minute
+   - Successful request rate  - availability percentage
+   - Custom metric  - any metric you send via the SDK
 4. **Set conditions:**
    - Threshold (absolute value, e.g., > 100 errors)
    - Relative (compared to baseline, e.g., > 3x average)
    - Window (1 minute to 24 hours)
-5. **Select notification channels** — one or more channels can be assigned.
+5. **Select notification channels**  - one or more channels can be assigned.
 6. **Set severity:**
-   - Critical — immediate action required
-   - Warning — investigate soon
-   - Info — informational, no action needed
+   - Critical  - immediate action required
+   - Warning  - investigate soon
+   - Info  - informational, no action needed
 7. **Save and activate** the rule.
 
-You can also set a **resolve notification** — TraceKit will send a follow-up message when the metric returns to normal. This reduces the need to manually check if an issue has recovered.
+You can also set a **resolve notification**  - TraceKit will send a follow-up message when the metric returns to normal. This reduces the need to manually check if an issue has recovered.
 
 ## Step 4: Programmatic Alerts (Dashboard and API)
 
@@ -241,10 +241,10 @@ curl -X PATCH https://app.tracekit.dev/api/v1/alerts/alert_abc123 \
 After setting up the starter kit alerts, verify they work:
 
 1. **Create all 4 starter kit alerts** using the dashboard walkthrough above.
-2. **Trigger a test error** in your application — call an endpoint that throws an exception, or use the SDK's `captureException` method.
+2. **Trigger a test error** in your application  - call an endpoint that throws an exception, or use the SDK's `captureException` method.
 3. **Wait 1-2 minutes** for the error spike alert to evaluate the time window.
 4. **Check your Slack channel** for the alert notification.
-5. **Click the notification link** — it should take you directly to the error in the TraceKit dashboard.
+5. **Click the notification link**  - it should take you directly to the error in the TraceKit dashboard.
 6. **Verify the alert details** show the correct metric, threshold, and severity.
 
 If the alert does not fire, see Troubleshooting below.
@@ -275,14 +275,14 @@ If the alert does not fire, see Troubleshooting below.
 
 - **Check auth token:** Ensure `TRACEKIT_AUTH_TOKEN` is set and the token has `alerts:write` scope.
 - **Check token expiry:** Auth tokens expire after 90 days by default. Create a new token if expired.
-- **Check endpoint URL:** The API base URL is `https://app.tracekit.dev/api/v1/` — ensure no trailing slash issues.
+- **Check endpoint URL:** The API base URL is `https://app.tracekit.dev/api/v1/`  - ensure no trailing slash issues.
 
 ## Next Steps
 
 Once alerting is configured, consider:
-- **Distributed Tracing** — See full trace context in alert details to understand cross-service failures (see `tracekit-distributed-tracing` skill)
-- **Code Monitoring** — Set live breakpoints when alerts fire to capture production state without redeploying (see `tracekit-code-monitoring` skill)
-- **Releases** — Track crash-free rates per release and alert on regressions (see `tracekit-releases` skill)
+- **Distributed Tracing**  - See full trace context in alert details to understand cross-service failures (see `tracekit-distributed-tracing` skill)
+- **Code Monitoring**  - Set live breakpoints when alerts fire to capture production state without redeploying (see `tracekit-code-monitoring` skill)
+- **Releases**  - Track crash-free rates per release and alert on regressions (see `tracekit-releases` skill)
 
 ## References
 
