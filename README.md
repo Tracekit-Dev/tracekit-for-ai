@@ -20,7 +20,7 @@ This repo is the shared source for TraceKit AI integrations. The `skills/` conte
 | npx-compatible tools | `npx skills add tracekit-dev/tracekit-for-ai` | Tool-dependent | Yes | repo skills layout |
 | Claude Code | `/install-plugin https://github.com/tracekit-dev/tracekit-for-ai` | Load [`.mcp.json`](./.mcp.json) or run `claude mcp add --scope project tracekit ./scripts/run-tracekit-mcp.sh` | Yes | `.claude-plugin/plugin.json` and `.mcp.json` |
 | Cursor | Add `tracekit-dev/tracekit-for-ai` as a plugin source | Load [`.cursor/mcp.json`](./.cursor/mcp.json) | Yes | `.cursor-plugin/plugin.json` and `.cursor/mcp.json` |
-| Codex | Load [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json) and install `TraceKit` | Included in the Codex plugin via [`.mcp.json`](./.mcp.json) | Yes | `.agents/plugins/marketplace.json`, `plugins/tracekit/.codex-plugin/plugin.json`, and `.mcp.json` |
+| Codex | Load [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json) and install `TraceKit` | Run `codex mcp add tracekit -- /absolute/path/to/tracekit-for-ai/scripts/run-tracekit-mcp.sh` | Yes | `.agents/plugins/marketplace.json`, `plugins/tracekit/.codex-plugin/plugin.json`, and `scripts/run-tracekit-mcp.sh` |
 
 Short version: one TraceKit repo, one shared skill set, multiple assistant-specific install paths.
 
@@ -30,6 +30,12 @@ Short version: one TraceKit repo, one shared skill set, multiple assistant-speci
 
 ```bash
 npx skills add tracekit-dev/tracekit-for-ai
+```
+
+To install all 23 skills at once (skips the interactive picker):
+
+```bash
+npx skills add tracekit-dev/tracekit-for-ai --all
 ```
 
 This installs the shared skills. MCP availability depends on whether that tool also supports loading this repo's MCP config.
@@ -57,6 +63,14 @@ For MCP in Cursor, load [`.cursor/mcp.json`](./.cursor/mcp.json) in the project.
 ### Codex
 
 Clone this repo and point Codex at [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json), then install the `TraceKit` plugin from that local marketplace.
+
+For MCP in Codex, add the local launcher script as a global MCP server using an absolute path:
+
+```bash
+codex mcp add tracekit -- /absolute/path/to/tracekit-for-ai/scripts/run-tracekit-mcp.sh
+```
+
+`tracekit` is just the server name shown inside Codex. Use an absolute path here because Codex stores the MCP server globally, so relative paths can break when Codex starts from another directory.
 
 On first use, the bundled launcher scripts automatically download the correct `tracekit-agent` binary from the latest GitHub release into [`bin/`](./bin), so end users do not need Go or Python installed.
 
@@ -157,7 +171,13 @@ claude mcp add --scope project tracekit ./scripts/run-tracekit-mcp.sh
 
 5. Test in Cursor by loading [`.cursor/mcp.json`](./.cursor/mcp.json) for the project.
 
-6. Test with Codex by loading [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json), installing `TraceKit`, and checking that the MCP server is available through the plugin.
+6. Test with Codex by:
+
+```bash
+codex mcp add tracekit -- /absolute/path/to/tracekit-for-ai/scripts/run-tracekit-mcp.sh
+```
+
+Then load [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json), install `TraceKit`, and check that the MCP server is available.
 
 ## Usage
 
