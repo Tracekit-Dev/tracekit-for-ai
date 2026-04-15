@@ -147,7 +147,7 @@ Only triggers when a boolean expression evaluates to true. Conditions are **eval
 
 ### Logpoint
 
-Injects a log message into the application output without capturing full variable state. Logpoints use template syntax with `{variable}` placeholders.
+Injects a log message into the application output, capturing **expressions only** without full variable snapshots. This reduces overhead significantly compared to line breakpoints. Logpoints use template syntax with `{variable}` placeholders and support per-breakpoint capture limits to control volume.
 
 **Use for:** Lightweight tracing without the overhead of full snapshots. Good for understanding control flow or tracking specific values over time.
 
@@ -168,6 +168,11 @@ Configure how much data breakpoints capture and how often they fire.
 | **Rate limit** | 10/min | Max snapshots per minute per breakpoint. Prevents runaway capture on hot paths. |
 | **Expiration** | 24 hours | Auto-remove the breakpoint after this duration. Prevents forgotten breakpoints. |
 | **Max string length** | 256 chars | Truncate string values beyond this length. |
+| **Mode** | `snapshot` | `snapshot` or `logpoint` - logpoint captures expressions only |
+| **Per-breakpoint max captures** | 100 | Maximum total captures before auto-disabling |
+| **Idle auto-expiry** | 24 hours | Auto-expires breakpoint after this period of inactivity |
+| **Pinning** | Off | When pinned, breakpoint ignores idle auto-expiry |
+| **Stack depth** | Full | Configurable stack trace depth per breakpoint (1-50 frames) |
 
 ### PII Scrubbing (Default On)
 
@@ -213,6 +218,24 @@ To disable PII scrubbing (not recommended for production):
 ```javascript
 captureConfig: { piiScrubbing: false }
 ```
+
+## Step 4b: Advanced Breakpoint Options
+
+### Per-breakpoint limits
+
+Each breakpoint can have its own max captures and rate limit independent of global settings. This allows fine-grained control -- a breakpoint on a hot path can have a lower rate limit (e.g., 2/min) while a breakpoint on a rarely-hit error path can allow more captures. Once a breakpoint reaches its max captures, it auto-disables to prevent runaway data collection.
+
+### Idle auto-expiry
+
+Breakpoints auto-expire after a configurable idle period (no captures). The default is 24 hours. This prevents forgotten breakpoints from persisting indefinitely in production. Pinned breakpoints are exempt from idle auto-expiry -- use pinning for breakpoints that monitor rare but critical code paths where you need to keep the breakpoint active regardless of capture frequency.
+
+### Dynamic stack traces
+
+Stack depth is configurable per breakpoint, from 1 to 50 frames. The default captures the full available stack. Deeper stacks help debug complex call chains but increase payload size. For most debugging scenarios, 10-20 frames provides sufficient context while keeping payloads compact. Reduce stack depth on high-throughput breakpoints to minimize overhead.
+
+### Conditional expressions
+
+Conditions are evaluated server-side in a sandboxed expression engine. Raw expressions never run in your application process. Supported operators: `==`, `!=`, `>`, `<`, `>=`, `<=`, `&&`, `||`, `!`. Variables are resolved from snapshot metadata sent by the SDK. The server evaluates the condition and instructs the SDK whether to capture, keeping evaluation overhead out of the application runtime.
 
 ## Step 5: Programmatic Snapshots (SDK API)
 
@@ -619,6 +642,8 @@ All safety features are enabled by default with zero configuration:
 | Remote Kill Switch | Available | Toggle in dashboard per service |
 | Real-Time SSE | Auto-discovered | No config needed, falls back to polling |
 | Capture Limits | Disabled (unlimited) | `captureConfig: { captureDepth, maxPayload, captureTimeout }` |
+| Per-breakpoint limits | 100 captures | Configurable per breakpoint |
+| Idle auto-expiry | 24 hours | Prevents forgotten breakpoints, can be pinned to disable |
 
 ### Kill Switch
 

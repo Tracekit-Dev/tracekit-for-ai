@@ -292,6 +292,20 @@ Breakpoints::capture('payment-failed', ['order_id' => $orderId, 'error' => $e->g
 
 See the `tracekit-code-monitoring` skill for the full pattern across all languages.
 
+### Code Monitoring v25.0 Features
+
+The latest SDK release adds these code monitoring capabilities (configured via the dashboard, no code changes needed):
+
+- **Logpoint mode** -- capture expressions only without full variable snapshots, reducing overhead
+- **Per-breakpoint limits** -- individual max captures (default: 100) and rate limits per breakpoint
+- **Dynamic stack traces** -- configurable stack depth per breakpoint (1-50 frames)
+- **Idle auto-expiry** -- breakpoints auto-expire after inactivity (default: 24h), pinnable to prevent expiry
+- **Conditional expressions** -- server-side evaluated conditions with full operator support (`==`, `!=`, `>`, `<`, `&&`, `||`)
+
+These features are available when `'enable_code_monitoring'` is set to `true`. No SDK code changes required -- all configuration is done through the TraceKit dashboard.
+
+For full details, see the `tracekit-code-monitoring` skill.
+
 ## Step 7: Database Query Tracing
 
 Database queries are automatically traced when `tracing.database` is `true` in `config/tracekit.php`. Each query generates a span with:
