@@ -82,7 +82,7 @@ func newMCPServer() *mcpServer {
 		{Name: "tracekit_trace_detail", Description: "Get full trace detail including all spans for a given trace ID.", InputSchema: schema("object", map[string]interface{}{"trace_id": stringProp("Trace ID to fetch")}, []string{"trace_id"})},
 		{Name: "tracekit_service_errors", Description: "Get recent error spans for a specific service.", InputSchema: schema("object", map[string]interface{}{"service_name": stringProp("TraceKit service name")}, []string{"service_name"})},
 		{Name: "tracekit_alert_history", Description: "Get firing history for a specific alert rule.", InputSchema: schema("object", map[string]interface{}{"rule_id": stringProp("Alert rule ID")}, []string{"rule_id"})},
-		{Name: "tracekit_create_alert_rule", Description: "Create a new alert rule.", InputSchema: schema("object", map[string]interface{}{"name": stringProp("Alert rule name"), "alert_type": enumStringProp("Alert type", []string{"threshold", "anomaly"}), "scope_type": enumStringProp("Scope type", []string{"global", "service"}), "scope_value": stringProp("Service name when scope_type is service"), "metric": enumStringProp("Metric to monitor", []string{"error_rate", "latency_p95", "latency_p99", "latency_avg", "request_count"}), "operator": enumStringProp("Comparison operator", []string{">", "<", ">=", "<=", "=="}), "threshold": floatProp("Threshold value"), "time_window": intProp("Time window in minutes"), "cooldown": intProp("Cooldown in minutes between alerts"), "severity": enumStringProp("Alert severity", []string{"critical", "warning", "info"}), "channel_ids": arrayProp("Notification channel IDs")}, []string{"name", "alert_type", "metric", "operator", "threshold", "time_window", "severity"})},
+		{Name: "tracekit_create_alert_rule", Description: "Create a new alert rule. The alert type is derived from the chosen metric.", InputSchema: schema("object", map[string]interface{}{"name": stringProp("Alert rule name"), "scope_type": enumStringProp("Scope type", []string{"global", "service"}), "scope_value": stringProp("Service name when scope_type is service"), "metric": enumStringProp("Metric to monitor", []string{"error_rate", "latency_p50", "latency_p95", "latency_p99", "latency_avg", "request_count", "health_score"}), "operator": enumStringProp("Comparison operator", []string{">", "<", ">=", "<=", "=="}), "threshold": floatProp("Threshold value (error_rate: percent 0-100, latency: milliseconds, request_count: requests in window, health_score: 0-100)"), "time_window": intProp("Time window in minutes"), "cooldown": intProp("Cooldown in minutes between alerts"), "severity": enumStringProp("Alert severity", []string{"critical", "warning", "info"}), "channel_ids": arrayProp("Notification channel IDs (from tracekit_channels)")}, []string{"name", "metric", "operator", "threshold", "time_window", "severity", "channel_ids"})},
 		{Name: "tracekit_delete_alert_rule", Description: "Delete an alert rule by ID.", InputSchema: schema("object", map[string]interface{}{"rule_id": stringProp("Alert rule ID to delete")}, []string{"rule_id"})},
 		{Name: "tracekit_toggle_alert_rule", Description: "Enable or disable an alert rule.", InputSchema: schema("object", map[string]interface{}{"rule_id": stringProp("Alert rule ID"), "enabled": boolProp("Whether the rule should be enabled")}, []string{"rule_id", "enabled"})},
 		{Name: "tracekit_channels", Description: "List configured notification channels.", InputSchema: schema("object", map[string]interface{}{}, []string{})},
@@ -187,18 +187,26 @@ func (s *mcpServer) callTool(raw json.RawMessage) (interface{}, error) {
 		if name == "" {
 			return nil, fmt.Errorf("name is required")
 		}
+		alertType, apiMetric, err := mapAlertMetric(strings.TrimSpace(getString(args, "metric", "")))
+		if err != nil {
+			return nil, err
+		}
+		channelIDs := getStringArray(args, "channel_ids")
+		if len(channelIDs) == 0 {
+			return nil, fmt.Errorf("channel_ids is required; list channels with tracekit_channels")
+		}
 		req := createAlertRuleRequest{
 			Name:       name,
-			AlertType:  getString(args, "alert_type", "threshold"),
+			AlertType:  alertType,
 			ScopeType:  getString(args, "scope_type", "global"),
 			ScopeValue: getString(args, "scope_value", ""),
-			Metric:     getString(args, "metric", ""),
+			Metric:     apiMetric,
 			Operator:   getString(args, "operator", ""),
 			Threshold:  getFloat(args, "threshold", 0),
 			TimeWindow: getInt(args, "time_window", 5),
 			Cooldown:   getInt(args, "cooldown", 10),
 			Severity:   getString(args, "severity", "warning"),
-			ChannelIDs: getStringArray(args, "channel_ids"),
+			ChannelIDs: channelIDs,
 		}
 		return client.createAlertRule(req)
 	case "tracekit_delete_alert_rule":
@@ -303,6 +311,32 @@ func getFloat(args map[string]interface{}, key string, fallback float64) float64
 	}
 	return fallback
 }
+// mapAlertMetric translates the tool's metric name into the API's
+// (alert_type, metric) pair. alert_type must be one of the backend's
+// alert_type enum values (error_rate, latency, throughput, health_score);
+// for latency rules the metric field selects the aggregate the evaluator
+// computes (p50/p95/p99/avg_latency).
+func mapAlertMetric(metric string) (string, string, error) {
+	switch metric {
+	case "error_rate":
+		return "error_rate", "error_rate", nil
+	case "latency_p50":
+		return "latency", "p50", nil
+	case "latency_p95":
+		return "latency", "p95", nil
+	case "latency_p99":
+		return "latency", "p99", nil
+	case "latency_avg":
+		return "latency", "avg_latency", nil
+	case "request_count":
+		return "throughput", "request_count", nil
+	case "health_score":
+		return "health_score", "health_score", nil
+	default:
+		return "", "", fmt.Errorf("unsupported metric %q: use one of error_rate, latency_p50, latency_p95, latency_p99, latency_avg, request_count, health_score", metric)
+	}
+}
+
 func getStringArray(args map[string]interface{}, key string) []string {
 	val, ok := args[key]
 	if !ok || val == nil {
